@@ -2,6 +2,7 @@
 import urllib
 
 import requests as http
+from django.http import HttpResponse
 from wechat_sdk import WechatConf, WechatBasic
 
 TOKEN = u"ZaiHuiWanSui2015"
@@ -110,11 +111,11 @@ class WeRespond(object):
         echostr = request.GET.get('echostr')
 
         if client().check_signature(signature, timestamp, nonce):
-            pass
+            print 'success'
         else:
-            pass
+            print 'something is wrong'
 
-        return echostr
+        return HttpResponse(echostr)
 
 
 class Web3rdClient(object):
