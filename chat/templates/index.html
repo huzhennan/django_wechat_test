@@ -1,0 +1,17 @@
+
+<h1>Wechat Index</h1>
+<div>
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+</div>
+<div>
+    <form action="{% url 'chat:generate_menu' %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="生成菜单">
+    </form>
+</div>
