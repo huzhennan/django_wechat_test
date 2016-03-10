@@ -4,6 +4,15 @@ import urllib
 import requests as http
 from wechat_sdk import WechatConf, WechatBasic
 
+TOKEN = u"ZaiHuiWanSui2015"
+APP_ID = u"wxd1ac16e44122c49a"
+APP_SECRET = u"d3ddce902a9d3c1f2071eb25f479df33"
+
+
+def client():
+    c = WeClient(APP_ID, APP_SECRET, APP_SECRET)
+    return c
+
 
 def generate_url(base_url, params):
     return base_url + "?" + urllib.urlencode(params)
@@ -13,6 +22,7 @@ class WebAuthMixin(object):
     """
     http://mp.weixin.qq.com/wiki/4/9ac2e7b1f1d22e9e57260f6553822520.html
     """
+
     def generate_auth_url(self, redirect_uri, scope='snsapi_base', state='test'):
         """
         生成网页制授权页面(对应第一步:用户同意授权，获取code)
@@ -64,21 +74,6 @@ class WebAuthMixin(object):
 
 
 class WeBaseMixin(object):
-    def create_menu(self, menu_data):
-        """
-        自定义菜单创建接口
-        :param menu_data: 菜单json数据
-        :return:
-        """
-        conf = WechatConf(
-            token=self.app_token(),
-            appid=self.app_id(),
-            appsecret=self.app_secret(),
-            encrypt_mode="normal"
-        )
-        wechat = WechatBasic(conf=conf)
-        return wechat.create_menu(menu_data)
-
     def app_id(self):
         return NotImplementedError()
 
@@ -89,8 +84,9 @@ class WeBaseMixin(object):
         return NotImplementedError()
 
 
-class WebClient(WebAuthMixin, WeBaseMixin):
+class WeClient(WechatBasic, WebAuthMixin, WeBaseMixin):
     def __init__(self, app_id, app_secret, app_token):
+        WechatBasic.__init__(self, token=app_token, appid=app_id, appsecret=app_secret)
         self.__app_id = app_id
         self.__app_secret = app_secret
         self.__app_token = app_token
@@ -103,3 +99,24 @@ class WebClient(WebAuthMixin, WeBaseMixin):
 
     def app_token(self):
         return self.__app_token
+
+
+class WeRespond(object):
+    @staticmethod
+    def check_signature(request):
+        signature = request.GET.get('signature')
+        timestamp = request.GET.get('timestamp')
+        nonce = request.GET.get('nonce')
+        echostr = request.GET.get('echostr')
+
+        if client().check_signature(signature, timestamp, nonce):
+            pass
+        else:
+            pass
+
+        return echostr
+
+
+class Web3rdClient(object):
+    def pre_auth_code(self, component_appid):
+        url = u"https://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode"
