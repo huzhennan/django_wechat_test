@@ -23,8 +23,8 @@ class WeAuthMixin(object):
     def get_access_token(self, code):
         url = self.__base_url() + "access_token"
         params = {
-            'appid': self.__app_id,
-            'secret': self.__app_secret,
+            'appid': self.app_id(),
+            'secret': self.app_secret(),
             'code': code,
             'grant_type': 'authorization_code'
         }
@@ -32,7 +32,10 @@ class WeAuthMixin(object):
         r = http.get(url, params=params)
         return r.json()
 
-    def ___base_url(self):
+    def get_open_id(self, code):
+        return self.get_access_token(code)
+
+    def __base_url(self):
         return u"https://open.weixin.qq.com/connect/oauth2/"
 
     def app_id(self):

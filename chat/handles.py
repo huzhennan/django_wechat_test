@@ -9,25 +9,33 @@ APP_SECRET = u"d3ddce902a9d3c1f2071eb25f479df33"
 
 
 def generate_menu_handle():
+    client = WeClient(APP_ID, APP_SECRET, APP_SECRET)
+    redirect_url = 'http://www.baidu.com'
+
     menu = {
         'button': [
             {
                 'type': 'view',
                 'name': 'BASE',
-                'url': 'http://www.zaihuiba.com/kata/menu'
+                'url': redirect_url
             },
             {
                 'type': 'view',
                 'name': 'SNSAPI_BASE',
-                'url': 'http://www.zaihuiba.com/kata/menu'
+                'url': client.generate_auth_url(redirect_url)
             },
             {
                 'type': 'view',
                 'name': 'SNSAPI_USERINFO',
-                'url': 'http://www.zaihuiba.com/kata/menu'
+                'url': client.generate_auth_url(redirect_url, scope='snsapi_userinfo')
             },
         ]
     }
 
     client = WeClient(APP_ID, APP_SECRET, APP_SECRET)
     client.create_menu(menu)
+
+
+def get_open_id(code):
+    client = WeClient(APP_ID, APP_SECRET, APP_SECRET)
+    return client.get_open_id(code)

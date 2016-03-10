@@ -8,6 +8,7 @@ from . import views
 app_name = 'chat'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^generate-menu$', views.generate_menu, name='generate_menu')
+    url(r'^generate-menu$', views.generate_menu, name='generate_menu'),
+    url(r'^open-id$', views.open_id, name='open_id'),
 ]
 

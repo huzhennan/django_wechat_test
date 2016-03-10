@@ -6,11 +6,11 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from wechat_sdk.exceptions import OfficialAPIError
 
-from .handles import generate_menu_handle
+from .handles import generate_menu_handle, get_open_id
 
 
 def index(request):
-    return render(request, 'index.html', {})
+    return render(request, 'chat/index.html', {})
 
 
 def generate_menu(request):
@@ -22,3 +22,15 @@ def generate_menu(request):
         messages.error(request, u'Something wrong')
 
     return HttpResponseRedirect(reverse('chat:index'))
+
+
+def open_id(request):
+    code = request.GET.get('code')
+    open_id = get_open_id(code)
+
+    return render(request,
+                  'chat/open_id.html',
+                  {
+                      'code': code,
+                      'open_id': open_id
+                  })
