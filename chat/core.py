@@ -20,23 +20,20 @@ class WeAuthMixin(object):
         ]
         return generate_url('https://open.weixin.qq.com/connect/oauth2/authorize', params)
 
-    def get_access_token(self, code):
-        url = self.__base_url() + "access_token"
-        params = {
-            'appid': self.app_id(),
-            'secret': self.app_secret(),
-            'code': code,
-            'grant_type': 'authorization_code'
-        }
+    def get_web_token(self, code):
+        url = u"https://api.weixin.qq.com/sns/oauth2/access_token"
+        params = (
+            ('appid', self.app_id()),
+            ('secret', self.app_secret()),
+            ('code', code),
+            ('grant_type', 'authorization_code')
+        )
 
         r = http.get(url, params=params)
         return r.json()
 
     def get_open_id(self, code):
-        return self.get_access_token(code)
-
-    def __base_url(self):
-        return u"https://open.weixin.qq.com/connect/oauth2/"
+        return self.get_web_token(code)
 
     def app_id(self):
         return NotImplementedError()
