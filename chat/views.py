@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from wechat_sdk.exceptions import OfficialAPIError
 
-from .handles import generate_menu_handle, get_open_id
+from .handles import generate_test_menu, get_open_id
 
 
 def index(request):
@@ -15,7 +15,11 @@ def index(request):
 
 def generate_menu(request):
     try:
-        generate_menu_handle()
+        redirect_url = request.POST.get('redirect_url')
+        if redirect_url:
+            generate_test_menu(redirect_url)
+        else:
+            generate_test_menu()
         messages.info(request, u'增加菜单成功')
     except OfficialAPIError, e:
         print e
