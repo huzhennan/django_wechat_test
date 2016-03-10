@@ -33,7 +33,7 @@ class WeAuthMixin(object):
         return r.json()
 
     def get_open_id(self, code):
-        return self.get_web_token(code)
+        return self.get_web_token(code)[u'openid']
 
     def app_id(self):
         return NotImplementedError()
