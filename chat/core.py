@@ -110,11 +110,13 @@ class WeRespond(object):
         nonce = request.GET.get('nonce')
         echostr = request.GET.get('echostr')
 
+        import pdb
+        pdb.set_trace()
+        # TODO: 测试这里检查不通过, do something.
         if client().check_signature(signature, timestamp, nonce):
             print 'success'
         else:
             print 'something is wrong'
-
         return HttpResponse(echostr)
 
 
