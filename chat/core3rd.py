@@ -13,8 +13,8 @@ APP_ID = u'wx67c082d3d5c5c355'
 
 
 class We3rdResponse(object):
-    @staticmethod
     @csrf_exempt
+    @staticmethod
     def receive_verify_ticket(request):
         msg_signature = request.GET.get('msg_signature')
         timestamp = request.GET.get('timestamp')
