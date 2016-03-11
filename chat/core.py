@@ -164,7 +164,7 @@ class WeClient(WechatBasic, WebAuthMixin):
         return self.__app_token
 
 
-class WeRespond(object):
+class WeResponse(object):
     @staticmethod
     def check_signature(request):
         signature = request.GET.get('signature')
@@ -184,11 +184,6 @@ class WeRespond(object):
     @staticmethod
     def test_token():
         client().get_access_token()
-
-
-class Web3rdClient(object):
-    def pre_auth_code(self, component_appid):
-        url = u"https://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode"
 
 
 if __name__ == '__main__':

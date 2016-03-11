@@ -8,12 +8,16 @@ from wechat_sdk.exceptions import OfficialAPIError
 
 from .handles import generate_test_menu, get_open_id
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def index(request):
     return render(request, 'chat/index.html', {})
 
 
 def generate_menu(request):
+    logger.debug("generate_menu 1111")
     try:
         redirect_url = request.POST.get('redirect_url')
         if redirect_url:
