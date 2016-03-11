@@ -13,16 +13,20 @@ APP_ID = u'wx67c082d3d5c5c355'
 
 
 class We3rdResponse(object):
-    @csrf_exempt
+
     @staticmethod
+    @csrf_exempt
     def receive_verify_ticket(request):
         msg_signature = request.GET.get('msg_signature')
         timestamp = request.GET.get('timestamp')
         nonce = request.GET.get('nonce')
+
         crypto = BasicCrypto(TOKEN, SYMMETRIC_KEY, APP_ID)
-        # crypto = BasicCrypto('spamtest', 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG', 'wx2c2769f8efd9abc2')
         msg = crypto.decrypt_message(msg=request.body, msg_signature=msg_signature, nonce=nonce, timestamp=timestamp)
-        logger.info("msg: %r",  msg)
+
+
+
+        logger.info("msg: %r", msg)
         return HttpResponse(u"success")
 
 

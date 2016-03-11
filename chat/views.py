@@ -60,5 +60,8 @@ def receive_verify_ticket(request):
 
     crypto = BasicCrypto(TOKEN, SYMMETRIC_KEY, APP_ID)
     msg = crypto.decrypt_message(msg=request.body, msg_signature=msg_signature, nonce=nonce, timestamp=timestamp)
+
+
+
     logger.info("msg: %r", msg)
     return HttpResponse(u"success")

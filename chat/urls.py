@@ -14,6 +14,6 @@ url(r'^$', views.index, name='index'),
     url(r'^open-id$', views.open_id, name='open_id'),
     url(r'^check-signature$', WeResponse.check_signature, name='check_signature'),
     # url(r'^(?P<app_id>\w+)/callback$', We3rdResponse.receive_verify_ticket, name='receive_verify_ticket'),
-    url(r'^event_handler/$', views.receive_verify_ticket, name='receive_verify_ticket'),
+    url(r'^event_handler/$', We3rdResponse.receive_verify_ticket, name='receive_verify_ticket'),
 ]
 
