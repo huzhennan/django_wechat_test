@@ -14,8 +14,8 @@ APP_ID = u'wx67c082d3d5c5c355'
 class We3rdResponse(object):
     @staticmethod
     @csrf_exempt
-    def receive_verify_ticket(request, app_id):
-        logger.info("app_id: %r, body: %r", app_id,  request.body)
+    def receive_verify_ticket(request):
+        logger.info("body: %r",  request.body)
         return HttpResponse(u"success")
 
 
