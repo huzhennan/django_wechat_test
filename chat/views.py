@@ -53,7 +53,7 @@ def test_web_3rd(request):
     elif request.method == 'POST':
         client = client3rd()
         try:
-            ret = client.grant_component_access_token()
+            ret = client.get_component_access_token()
         except RuntimeError, e:
             logging.error(e.message)
             ret = "ERROR"

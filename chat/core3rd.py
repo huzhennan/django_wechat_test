@@ -26,20 +26,34 @@ def client3rd():
 
 
 class Web3rdAuthMixin(object):
-    COMPONENT_VERIFY_TICKET_KEY = "component_verify_ticket"
+    COMPONENT_VERIFY_TICKET_KEY = u"component_verify_ticket"
+    COMPONENT_ACCESS_TOKEN = u"component_access_token"
 
-    def grant_component_access_token(self):
+    def get_component_access_token(self):
+        var = self.store.get(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
+        if var:
+            return var
+        else:
+            ret = self._grant_component_access_token()
+            component_access_token = ret[u'component_access_token']
+            # 提前十分钟失效
+            expires_in = int(ret[u'expires_in']) - 60 * 10
+            self.store.setex(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY, expires_in, component_access_token)
+            return component_access_token
+
+    def _grant_component_access_token(self):
         url = u"https://api.weixin.qq.com/cgi-bin/component/api_component_token"
         data = {
-            "component_appid": self.app_id,
-            "component_appsecret": self.app_secret,
-            "component_verify_tick": self._verify_ticket
+            u"component_appid": self.app_id,
+            u"component_appsecret": self.app_secret,
+            u"component_verify_ticket": self._verify_ticket
         }
         logging.info("data: %r", data)
         return http.post(url, json=data).json()
 
     @property
     def _verify_ticket(self):
+        # return u'ticket@@@7OJjhu397JbweAz8cvnLwsROVbDSonskdcoMorknHSLgTZGLY9m1gyvk9etNDWP4RxG3_SR9NZoO_WlQRpjvug'
         ticket = self.store.get(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
         if ticket:
             return ticket
