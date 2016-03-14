@@ -15,5 +15,6 @@ url(r'^$', views.index, name='index'),
     url(r'^check-signature$', WeResponse.check_signature, name='check_signature'),
     # url(r'^(?P<app_id>\w+)/callback$', We3rdResponse.receive_verify_ticket, name='receive_verify_ticket'),
     url(r'^event_handler/$', We3rdResponse.receive_verify_ticket, name='receive_verify_ticket'),
+    url(r'^test_web_3rd', views.test_web_3rd, name='test_web_3rd')
 ]
 
