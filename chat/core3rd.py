@@ -30,7 +30,7 @@ class Web3rdAuthMixin(object):
     COMPONENT_ACCESS_TOKEN = u"component_access_token"
 
     def get_component_access_token(self):
-        var = self.store.get(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
+        var = self.store.get(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN)
         if var:
             return var
         else:
@@ -38,7 +38,7 @@ class Web3rdAuthMixin(object):
             component_access_token = ret[u'component_access_token']
             # 提前十分钟失效
             expires_in = int(ret[u'expires_in']) - 60 * 10
-            self.store.setex(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY, expires_in, component_access_token)
+            self.store.setex(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN, expires_in, component_access_token)
             return component_access_token
 
     def _grant_component_access_token(self):
