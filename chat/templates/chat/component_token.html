@@ -1,0 +1,13 @@
+{% extends 'chat/base.html' %}
+{% block content %}
+<div>
+    <h2>获取得到`component_access_token`</h2>
+    {% if component_access_token %}
+        <p>component_access_token: {{ component_access_token }}</p>
+    {% endif %}
+    <form action="{% url 'chat:component_token' %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="Get">
+    </form>
+</div>
+{% endblock %}

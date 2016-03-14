@@ -1,12 +1,14 @@
-<h1>第三方微信平台测试页面</h1>
+{% extends 'chat/base.html' %}
 
+{% block content %}
 <div>
-    <h2>获取得到`component_access_token`</h2>
-    {% if component_access_token %}
-    <p>component_access_token: {{ component_access_token }}</p>
-    {% endif %}
-<form action="" method="post">
-    {% csrf_token %}
-    <input type="submit" value="Get">
-</form>
+    <h2>我的车票</h2>
+    <p>车票: {{ ticket }}</p>
 </div>
+<div>
+<ul>
+    <li><a href="{% url 'chat:component_token' %}">获取得到`component_access_token`</a> </li>
+    <li><a href="{% url 'chat:pre_auth_code' %}">获取得到`pre_auth_code`</a> </li>
+</ul>
+</div>
+{% endblock %}

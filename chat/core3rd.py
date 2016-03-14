@@ -1,5 +1,6 @@
 # encoding=utf-8
 import logging
+from urllib import urlencode
 
 import redis
 import requests as http
@@ -25,20 +26,52 @@ def client3rd():
     return c
 
 
+def generate_url(base_url, params):
+    return base_url + "?" + urlencode(params)
+
+
 class Web3rdAuthMixin(object):
     COMPONENT_VERIFY_TICKET_KEY = u"component_verify_ticket"
-    COMPONENT_ACCESS_TOKEN = u"component_access_token"
+    COMPONENT_ACCESS_TOKEN_KEY = u"component_access_token"
+    PRE_AUTH_CODE_KEY = u"pre_auth_code"
+
+    def get_pre_auth_code(self):
+        pre_auth_code = self.store.get(Web3rdAuthMixin.PRE_AUTH_CODE_KEY)
+        if pre_auth_code:
+            logging.debug("get pre_auth_code from store")
+            return pre_auth_code
+        else:
+            logging.debug("get pre_auth_code from http")
+            ret = self._grant_pre_auth_code()
+            pre_auth_code = ret[u'pre_auth_code']
+            expires_in = int(ret[u'expires_in'])
+            self.store.setex(Web3rdAuthMixin.PRE_AUTH_CODE_KEY, expires_in, pre_auth_code)
+            return pre_auth_code
+
+    def _grant_pre_auth_code(self):
+        token = self.get_component_access_token()
+        params = {
+            u'component_access_token': token
+        }
+        url = generate_url(u"https://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode", params)
+
+        json_data = {
+            u"component_appid": self.app_id
+        }
+        return http.post(url, json=json_data).json()
 
     def get_component_access_token(self):
-        var = self.store.get(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN)
-        if var:
-            return var
+        component_access_token = self.store.get(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY)
+        if component_access_token:
+            logging.debug("get component_access_token from store")
+            return component_access_token
         else:
+            logging.debug("get component_access_token from http")
             ret = self._grant_component_access_token()
             component_access_token = ret[u'component_access_token']
             # 提前十分钟失效
             expires_in = int(ret[u'expires_in']) - 60 * 10
-            self.store.setex(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN, expires_in, component_access_token)
+            self.store.setex(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY, expires_in, component_access_token)
             return component_access_token
 
     def _grant_component_access_token(self):
@@ -46,14 +79,14 @@ class Web3rdAuthMixin(object):
         data = {
             u"component_appid": self.app_id,
             u"component_appsecret": self.app_secret,
-            u"component_verify_ticket": self._verify_ticket
+            u"component_verify_ticket": self.verify_ticket
         }
         logging.info("data: %r", data)
         return http.post(url, json=data).json()
 
     @property
-    def _verify_ticket(self):
-        # return u'ticket@@@7OJjhu397JbweAz8cvnLwsROVbDSonskdcoMorknHSLgTZGLY9m1gyvk9etNDWP4RxG3_SR9NZoO_WlQRpjvug'
+    def verify_ticket(self):
+        return u'ticket@@@4yE6L4P1Md6fryL8C8cB1rAovWivQonp1kT6KEhPoJ3eCM2HsoGwjnZlMU5p7PldqL69eK2WXG0ww1HSc5rfoA'
         ticket = self.store.get(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
         if ticket:
             return ticket

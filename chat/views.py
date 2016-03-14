@@ -47,9 +47,17 @@ def open_id(request):
                   })
 
 
+@require_GET
 def test_web_3rd(request):
+    client = client3rd()
+    ticket = client.verify_ticket
+
+    return render(request, 'chat/test_web_3rd.html', {'ticket': ticket})
+
+
+def component_token(request):
     if request.method == 'GET':
-        return render(request, 'chat/test_web_3rd.html')
+        return render(request, 'chat/component_token.html')
     elif request.method == 'POST':
         client = client3rd()
         try:
@@ -57,8 +65,14 @@ def test_web_3rd(request):
         except RuntimeError, e:
             logging.error(e.message)
             ret = "ERROR"
-
-        return render(request, 'chat/test_web_3rd.html', {'component_access_token': ret})
-
+        return render(request, 'chat/component_token.html', {'component_access_token': ret})
 
 
+def pre_auth_code(request):
+    if request.method == 'GET':
+        return render(request, 'chat/pre_auth_code.html')
+    elif request.method == 'POST':
+        client = client3rd()
+        ret = client.get_pre_auth_code()
+        logging.debug("ret: %r", ret)
+        return render(request, 'chat/pre_auth_code.html', {'pre_auth_code': ret})

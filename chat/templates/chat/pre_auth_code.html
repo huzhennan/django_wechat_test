@@ -1,0 +1,13 @@
+{% extends 'chat/base.html' %}
+{% block content %}
+<div>
+    <h2>获取得到`pre_auth_code`</h2>
+    {% if pre_auth_code %}
+        <p>pre_auth_code: {{ pre_auth_code }}</p>
+    {% endif %}
+    <form action="{% url 'chat:pre_auth_code' %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="Get">
+    </form>
+</div>
+{% endblock %}
