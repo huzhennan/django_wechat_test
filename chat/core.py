@@ -3,8 +3,8 @@ from __future__ import absolute_import
 
 import logging
 import time
-import urllib
 from datetime import datetime
+from urllib import urlencode
 
 import redis
 import requests as http
@@ -27,7 +27,7 @@ def client():
 
 
 def generate_url(base_url, params):
-    return base_url + "?" + urllib.urlencode(params)
+    return base_url + "?" + urlencode(params)
 
 
 class WebAuthMixin(object):
@@ -45,7 +45,7 @@ class WebAuthMixin(object):
         :return:
         """
         params = [
-            ('appid', self.app_id()),
+            ('appid', self.app_id),
             ('redirect_uri', redirect_uri),
             ('response_type', 'code'),
             ('scope', scope),
@@ -61,8 +61,8 @@ class WebAuthMixin(object):
         """
         url = u"https://api.weixin.qq.com/sns/oauth2/access_token"
         params = (
-            ('appid', self.app_id()),
-            ('secret', self.app_secret()),
+            ('appid', self.app_id),
+            ('secret', self.app_secret),
             ('code', code),
             ('grant_type', 'authorization_code')
         )
@@ -78,21 +78,12 @@ class WebAuthMixin(object):
         """
         return self.get_web_token(code)[u'openid']
 
+    @property
     def app_id(self):
         return NotImplementedError()
 
+    @property
     def app_secret(self):
-        return NotImplementedError()
-
-
-class WeBaseMixin(object):
-    def app_id(self):
-        return NotImplementedError()
-
-    def app_secret(self):
-        return NotImplementedError()
-
-    def app_token(self):
         return NotImplementedError()
 
 
@@ -154,12 +145,15 @@ class WeClient(WechatBasic, WebAuthMixin):
     def store(self):
         return self.__store
 
+    @property
     def app_id(self):
         return self.__app_id
 
+    @property
     def app_secret(self):
         return self.__app_secret
 
+    @property
     def app_token(self):
         return self.__app_token
 
