@@ -3,50 +3,86 @@ from __future__ import absolute_import
 
 import redis
 import logging
+import ast
 
 logger = logging.getLogger(__name__)
 
 
 class Keeper(object):
-    def __init__(self, name, client, store):
+    EXPIRES_IN = u'expires_in'
+
+    def __init__(self, store, key, gain_func=None, shorten=0):
         """
-        :name 用来生成key
-        :param client: 从网上获取taken的方法
+        :param store: redis存储
+        :param key: 用来生成key
+        :param gain_func: 从网上获取taken的方法
+        :param shorten: 缩短`expires_in`大小
         """
-        self.__name = name
-        self.__client = client
         self.__store = store
+        self.__key = key
+        self.__gain_func = gain_func
+        self.__shorten = shorten
 
-    def get_access_token(self):
-        cell = self.store().get(self.key())
-        logger.debug(self.store().ttl(self.key()))
-        if cell:
-            return cell
+    def get(self):
+        var = self.store.get(self.key)
+        if var:
+            logger.debug("get %r = %r from store", self.key, var)
+            return ast.literal_eval(var)
         else:
-            logger.debug("Get token from request")
-            json_ret = self.client().grant_token()
-            token = json_ret[u'access_token']
-            expires_in = int(json_ret[u'expires_in'])
-            store.setex(self.key(), expires_in, token)
+            if callable(self.gain_func):
+                var = self.gain_func()
+                logger.debug("get %r = %r from %r", self.key, var, self.gain_func)
+                expires_in = var.get(Keeper.EXPIRES_IN, None)
+                if expires_in:
+                    expires_in = int(expires_in) - self.shorten
 
-            return token
+                if expires_in:
+                    self.store.setex(self.key, expires_in, var)
+                else:
+                    self.store.set(self.key, var)
+                return var
+            else:
+                raise RuntimeError("I need get a way to get value")
 
-    def client(self):
-        return self.__client
+    def setex(self, name, value, time):
+        """
+        Set the value of key name to value that expires in time seconds
+        """
+        return self.store.setex(name, value, time)
 
+    def set(self, name, value):
+        """
+        Set the value at key name to value
+        """
+        return self.set(name, value)
+
+    @property
     def store(self):
         return self.__store
 
+    @property
     def key(self):
-        return self.__name
+        return self.__key
+
+    @property
+    def gain_func(self):
+        return self.__gain_func
+
+    @property
+    def shorten(self):
+        return self.__shorten
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    from chat.core import client
 
+
+    class A(object):
+        def gain_func(self):
+            return {"key": "this is"}
+
+    obj = A()
     store = redis.StrictRedis(host='localhost', port=6379)
-    c = client()
-    keeper = Keeper("access_token", c, store)
+    keeper = Keeper(store, "access_token", obj.gain_func)
 
-    print keeper.get_access_token()
+    print "%r %r" % ('haha', keeper.get())

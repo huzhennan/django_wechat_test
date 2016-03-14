@@ -50,7 +50,12 @@ def open_id(request):
 @require_GET
 def test_web_3rd(request):
     client = client3rd()
-    ticket = client.verify_ticket
+    try:
+        ticket = client.verify_ticket
+    except RuntimeError as e:
+        msg = u"我没有票,没有票"
+        logger.exception(msg)
+        ticket = msg
 
     return render(request, 'chat/test_web_3rd.html', {'ticket': ticket})
 

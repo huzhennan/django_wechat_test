@@ -11,6 +11,8 @@ from wechat_sdk.exceptions import ParseError, NeedParseError
 from wechat_sdk.lib.parser import XMLStore
 from wechat_sdk.messages import MESSAGE_TYPES, UnknownMessage
 
+from chat.keeper import Keeper
+
 logger = logging.getLogger(__name__)
 
 APP_ID = u'wx67c082d3d5c5c355'
@@ -36,19 +38,12 @@ class Web3rdAuthMixin(object):
     PRE_AUTH_CODE_KEY = u"pre_auth_code"
 
     def get_pre_auth_code(self):
-        pre_auth_code = self.store.get(Web3rdAuthMixin.PRE_AUTH_CODE_KEY)
-        if pre_auth_code:
-            logging.debug("get pre_auth_code from store")
-            return pre_auth_code
-        else:
-            logging.debug("get pre_auth_code from http")
-            ret = self._grant_pre_auth_code()
-            pre_auth_code = ret[u'pre_auth_code']
-            expires_in = int(ret[u'expires_in'])
-            self.store.setex(Web3rdAuthMixin.PRE_AUTH_CODE_KEY, expires_in, pre_auth_code)
-            return pre_auth_code
+        keeper = Keeper(self.store,
+                        Web3rdAuthMixin.PRE_AUTH_CODE_KEY,
+                        gain_func=self._gain_pre_auth_code)
+        return keeper.get()
 
-    def _grant_pre_auth_code(self):
+    def _gain_pre_auth_code(self):
         token = self.get_component_access_token()
         params = {
             u'component_access_token': token
@@ -61,20 +56,13 @@ class Web3rdAuthMixin(object):
         return http.post(url, json=json_data).json()
 
     def get_component_access_token(self):
-        component_access_token = self.store.get(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY)
-        if component_access_token:
-            logging.debug("get component_access_token from store")
-            return component_access_token
-        else:
-            logging.debug("get component_access_token from http")
-            ret = self._grant_component_access_token()
-            component_access_token = ret[u'component_access_token']
-            # 提前十分钟失效
-            expires_in = int(ret[u'expires_in']) - 60 * 10
-            self.store.setex(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY, expires_in, component_access_token)
-            return component_access_token
+        keeper = Keeper(self.store,
+                        Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY,
+                        gain_func=self._gain_component_access_token,
+                        shorten=60 * 10)
+        return keeper.get()
 
-    def _grant_component_access_token(self):
+    def _gain_component_access_token(self):
         url = u"https://api.weixin.qq.com/cgi-bin/component/api_component_token"
         data = {
             u"component_appid": self.app_id,
@@ -86,12 +74,9 @@ class Web3rdAuthMixin(object):
 
     @property
     def verify_ticket(self):
-        return u'ticket@@@4yE6L4P1Md6fryL8C8cB1rAovWivQonp1kT6KEhPoJ3eCM2HsoGwjnZlMU5p7PldqL69eK2WXG0ww1HSc5rfoA'
-        ticket = self.store.get(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
-        if ticket:
-            return ticket
-        else:
-            raise RuntimeError("I don't have a verify ticket, give me!!")
+        # return u'ticket@@@Vj2tT4I8R0vlyHTGNqDGSo7Dxvr6vYtHKF52yxcGuAFh0pOPh8A7OVf36uUpgDGrLY0WyZMDmolcihAeOgsrvw'
+        keeper = Keeper(self.store, Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
+        return keeper.get()
 
     @property
     def store(self):
@@ -106,21 +91,10 @@ class Web3rdAuthMixin(object):
         raise NotImplementedError()
 
 
-class We3rdClient(WechatBasic, Web3rdAuthMixin):
-    def __init__(self, app_id, app_secret, app_token, encoding_aes_key, store, encrypt_mode='safe'):
-        conf = WechatConf(
-            appid=app_id,
-            appsecret=app_secret,
-            token=app_token,
-            encrypt_mode=encrypt_mode,
-            encoding_aes_key=encoding_aes_key
-        )
-        WechatBasic.__init__(self, conf=conf)
-        self.__app_id = app_id
-        self.__app_secret = app_secret
-        self.__store = store
-
-    # 重写 parse_data 几个数据 BEGIN
+class RewriteMixin(object):
+    """
+    用来覆盖`WechatBasic`的几个函数
+    """
     def parse_data(self, data, msg_signature=None, timestamp=None, nonce=None):
         """
         解析微信服务器发送过来的数据并保存类中
@@ -179,7 +153,20 @@ class We3rdClient(WechatBasic, Web3rdAuthMixin):
         if not self.__is_parse:
             raise NeedParseError()
 
-    # 重写 parse_data 几个数据 BEGIN
+
+class We3rdClient(RewriteMixin, WechatBasic, Web3rdAuthMixin):
+    def __init__(self, app_id, app_secret, app_token, encoding_aes_key, store, encrypt_mode='safe'):
+        conf = WechatConf(
+            appid=app_id,
+            appsecret=app_secret,
+            token=app_token,
+            encrypt_mode=encrypt_mode,
+            encoding_aes_key=encoding_aes_key
+        )
+        WechatBasic.__init__(self, conf=conf)
+        self.__app_id = app_id
+        self.__app_secret = app_secret
+        self.__store = store
 
     @property
     def store(self):
