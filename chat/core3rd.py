@@ -12,10 +12,10 @@ from wechat_sdk.messages import MESSAGE_TYPES, UnknownMessage
 
 logger = logging.getLogger(__name__)
 
-TOKEN = u'ZaiHuiNiuBi20151102'
-SYMMETRIC_KEY = u'yBUilBquwak6qAzuL1U04JrFSjwDjukjDoFjPRuLCU2'
 APP_ID = u'wx67c082d3d5c5c355'
 APP_SECRET = u'7678827bbe43445e4fb6631cd96e02dc'
+TOKEN = u'ZaiHuiNiuBi20151102'
+SYMMETRIC_KEY = u'yBUilBquwak6qAzuL1U04JrFSjwDjukjDoFjPRuLCU2'
 
 store = redis.StrictRedis(host='localhost', port=6379)
 
@@ -35,7 +35,8 @@ class Web3rdAuthMixin(object):
             "component_appsecret": self.app_secret,
             "component_verify_tick": self._verify_ticket
         }
-        return http.post(url, data).json()
+        logging.info("data: %r", data)
+        return http.post(url, json=data).json()
 
     @property
     def _verify_ticket(self):
