@@ -1,0 +1,15 @@
+{% extends 'chat/base.html' %}
+{% block content %}
+<div>
+    <h2>获取得到`verify_ticket`</h2>
+    <h2>我的车票</h2>
+    {% if ticket %}
+    <p>车票: {{ ticket }}</p>
+    {% endif %}
+<form action="" method="post">
+    {% csrf_token %}
+    <input type="text" name="verify_ticket">
+    <input type="submit" value="Set">
+</form>
+</div>
+{% endblock %}

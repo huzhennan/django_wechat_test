@@ -40,7 +40,8 @@ class Web3rdAuthMixin(object):
     def get_pre_auth_code(self):
         keeper = Keeper(self.store,
                         gain_func=self._gain_pre_auth_code)
-        return keeper.get(Web3rdAuthMixin.PRE_AUTH_CODE_KEY)
+        ret = keeper.get(Web3rdAuthMixin.PRE_AUTH_CODE_KEY)
+        return ret.get(u'pre_auth_code')
 
     def _gain_pre_auth_code(self):
         token = self.get_component_access_token()
@@ -58,7 +59,8 @@ class Web3rdAuthMixin(object):
         keeper = Keeper(self.store,
                         gain_func=self._gain_component_access_token,
                         shorten=60 * 10)
-        return keeper.get(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY)
+        ret = keeper.get(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY)
+        return ret.get(u'component_access_token')
 
     def _gain_component_access_token(self):
         url = u"https://api.weixin.qq.com/cgi-bin/component/api_component_token"
@@ -72,9 +74,13 @@ class Web3rdAuthMixin(object):
 
     @property
     def verify_ticket(self):
-        # return u'ticket@@@Vj2tT4I8R0vlyHTGNqDGSo7Dxvr6vYtHKF52yxcGuAFh0pOPh8A7OVf36uUpgDGrLY0WyZMDmolcihAeOgsrvw'
         keeper = Keeper(self.store)
         return keeper.get(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
+
+    @verify_ticket.setter
+    def verify_ticket(self, ticket):
+        keeper = Keeper(self.store)
+        keeper.setex(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY, 60*10, ticket)
 
     @property
     def store(self):
@@ -194,6 +200,8 @@ class We3rdResponse(object):
         verify_ticket = msg.ComponentVerifyTicket
         expires_in = 10 * 60
 
-        client.store.setex(We3rdClient.COMPONENT_VERIFY_TICKET_KEY, expires_in, verify_ticket)
+        keeper = Keeper(client.store)
+        keeper.setex(We3rdClient.COMPONENT_VERIFY_TICKET_KEY, expires_in, verify_ticket)
+
         logger.info("I gains a  ticket: %r, expires_in: %r", verify_ticket, expires_in)
         return HttpResponse(u"success")

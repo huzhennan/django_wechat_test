@@ -43,19 +43,21 @@ class Keeper(object):
                     self.store.set(key, var_json)
                 return var
             else:
-                raise RuntimeError("I need get a way to get value")
+                raise RuntimeError("I need a way to get value(self.gain_func==null)")
 
-    def setex(self, key, value, time):
+    def setex(self, key, time, value):
         """
         Set the value of key name to value that expires in time seconds
         """
-        return self.store.setex(key, value, time)
+        val = json.dumps(value)
+        return self.store.setex(key, time, val)
 
     def set(self, key, value):
         """
         Set the value at key name to value
         """
-        return self.set(key, value)
+        val = json.dumps(value)
+        return self.set(key, val)
 
     @property
     def store(self):
@@ -86,3 +88,8 @@ if __name__ == '__main__':
     ret = keeper.get("access_token")
 
     print "%r %r" % (type(ret), ret)
+
+    keeper.setex("access_token2", 1000, "hello")
+    ret2 = keeper.get("access_token2")
+    print "%r %r" % (type(ret2), ret2)
+

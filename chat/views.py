@@ -49,15 +49,29 @@ def open_id(request):
 
 @require_GET
 def test_web_3rd(request):
-    client = client3rd()
-    try:
-        ticket = client.verify_ticket
-    except RuntimeError as e:
-        msg = u"我没有票,没有票"
-        logger.exception(msg)
-        ticket = msg
+    return render(request, 'chat/test_web_3rd.html')
 
-    return render(request, 'chat/test_web_3rd.html', {'ticket': ticket})
+
+def verify_ticket(request):
+    if request.method == 'GET':
+        client = client3rd()
+        try:
+            ticket = client.verify_ticket
+        except RuntimeError as e:
+            msg = u"我没有票,没有票"
+            logger.exception(msg)
+            ticket = msg
+        return render(request, 'chat/verify_ticket.html', {'ticket': ticket})
+    elif request.method == 'POST':
+        ticket = request.POST.get('verify_ticket')
+
+        client = client3rd()
+        client.verify_ticket = ticket
+
+        return render(request, 'chat/verify_ticket.html', {'ticket': ticket})
+
+
+
 
 
 def component_token(request):
