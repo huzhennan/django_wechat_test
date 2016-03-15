@@ -270,15 +270,18 @@ class We3rdResponse(object):
     def auth_handle(request, auth_code, expires_in):
         client = client3rd()
         ret = client.api_query_auth(auth_code)
+        auth_info = ret[u'authorization_info']
 
-        key = u"auth_%s_authorizer_access_token" % ret[u'authorizer_appid']
+        key = u"auth_%s_authorizer_access_token" % auth_info[u'authorizer_appid']
+        value = json.dumps(auth_info[u'authorizer_access_token'])
 
         # 缓存 access token
         keeper = Keeper(client.store)
-        keeper.setex(key, expires_in, ret[u'authorizer_access_token'])
+        keeper.setex(key, expires_in, value)
 
         # 缓存 refresh token
-        refresh_key = u"refresh_%s_authorizer_refresh_token" % ret[u'authorizer_appid']
-        keeper.set(refresh_key, ret[u'authorizer_refresh_token'])
+        refresh_key = u"refresh_%s_authorizer_refresh_token" % auth_info[u'authorizer_appid']
+        refresh_value = json.dumps(auth_info[u'authorizer_refresh_token'])
+        keeper.set(refresh_key, refresh_value)
 
         return HttpResponse(u"ret: %r" % ret)
