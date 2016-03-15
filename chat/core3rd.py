@@ -39,9 +39,8 @@ class Web3rdAuthMixin(object):
 
     def get_pre_auth_code(self):
         keeper = Keeper(self.store,
-                        Web3rdAuthMixin.PRE_AUTH_CODE_KEY,
                         gain_func=self._gain_pre_auth_code)
-        return keeper.get()
+        return keeper.get(Web3rdAuthMixin.PRE_AUTH_CODE_KEY)
 
     def _gain_pre_auth_code(self):
         token = self.get_component_access_token()
@@ -57,10 +56,9 @@ class Web3rdAuthMixin(object):
 
     def get_component_access_token(self):
         keeper = Keeper(self.store,
-                        Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY,
                         gain_func=self._gain_component_access_token,
                         shorten=60 * 10)
-        return keeper.get()
+        return keeper.get(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY)
 
     def _gain_component_access_token(self):
         url = u"https://api.weixin.qq.com/cgi-bin/component/api_component_token"
