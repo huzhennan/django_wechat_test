@@ -273,7 +273,7 @@ class We3rdResponse(object):
         auth_info = ret[u'authorization_info']
 
         key = u"auth_%s_authorizer_access_token" % auth_info[u'authorizer_appid']
-        value = json.dumps(auth_info[u'authorizer_access_token'])
+        value = auth_info[u'authorizer_access_token']
 
         # 缓存 access token
         keeper = Keeper(client.store)
@@ -281,7 +281,10 @@ class We3rdResponse(object):
 
         # 缓存 refresh token
         refresh_key = u"refresh_%s_authorizer_refresh_token" % auth_info[u'authorizer_appid']
-        refresh_value = json.dumps(auth_info[u'authorizer_refresh_token'])
+        refresh_value = auth_info[u'authorizer_refresh_token']
+        import pdb
+        pdb.set_trace()
+
         keeper.set(refresh_key, refresh_value)
 
         return HttpResponse(u"ret: %r" % ret)
