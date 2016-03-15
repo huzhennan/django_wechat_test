@@ -5,6 +5,7 @@ from urllib import urlencode
 import redis
 import requests as http
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from wechat_sdk import WechatConf, WechatBasic
 from wechat_sdk.exceptions import ParseError, NeedParseError
@@ -88,7 +89,7 @@ class Web3rdAuthMixin(object):
     @verify_ticket.setter
     def verify_ticket(self, ticket):
         keeper = Keeper(self.store)
-        keeper.setex(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY, 60*10, ticket)
+        keeper.setex(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY, 60 * 10, ticket)
 
     @property
     def store(self):
@@ -107,6 +108,7 @@ class RewriteMixin(object):
     """
     用来覆盖`WechatBasic`的几个函数
     """
+
     def parse_data(self, data, msg_signature=None, timestamp=None, nonce=None):
         """
         解析微信服务器发送过来的数据并保存类中
@@ -197,10 +199,22 @@ class We3rdResponse(object):
     @staticmethod
     @csrf_exempt
     def receive_verify_ticket(request):
-        msg_signature = request.GET.get('msg_signature')
-        timestamp = request.GET.get('timestamp')
-        nonce = request.GET.get('nonce')
+        msg_signature = request.GET.get(u'msg_signature')
+        timestamp = request.GET.get(u'timestamp')
+        nonce = request.GET.get(u'nonce')
 
+        auth_code = request.GET.get(u'auth_code')
+        expires_in = request.GET.get(u'expires_in')
+
+        if msg_signature is not None and timestamp is not None and nonce is not None:
+            return We3rdResponse.ticket_handler(request, msg_signature, timestamp, nonce)
+        elif auth_code is not None and expires_in is not None:
+            return We3rdResponse.auth_handle(request, auth_code, expires_in)
+        else:
+            raise NotImplementedError("something is wrong.")
+
+    @staticmethod
+    def ticket_handler(request, msg_signature, timestamp, nonce):
         client = client3rd()
         client.parse_data(data=request.body, msg_signature=msg_signature, timestamp=timestamp, nonce=nonce)
         msg = client.get_message()
@@ -213,3 +227,7 @@ class We3rdResponse(object):
 
         logger.info("I gains a  ticket: %r, expires_in: %r", verify_ticket, expires_in)
         return HttpResponse(u"success")
+
+    @staticmethod
+    def auth_handle(request, auth_code, expires_in):
+        return render(request, 'chat/auth_handle.html', {'auth_code': auth_code, 'expires_in': expires_in})
