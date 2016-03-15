@@ -4,7 +4,7 @@ import logging
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from wechat_sdk.exceptions import OfficialAPIError
 from django.views.decorators.http import require_GET, require_POST
@@ -101,3 +101,14 @@ def component_login_page(request):
     login_page_uri = client.generate_component_login_page(u"http://www.zaihuiba.com/chat/event_handler/")
     logger.debug("ret: %r", login_page_uri)
     return render(request, 'chat/component_login_page.html', {u'login_page_uri': login_page_uri})
+
+
+def auth_token(request):
+    if request.method == 'GET':
+        return render(request, 'chat/auth_token.html')
+    elif request.method == 'POST':
+        appid = request.POST.get('appid')
+
+        client = client3rd()
+        ret = client.get_authorizer_token(appid)
+        return HttpResponse("ret:%r" % ret)

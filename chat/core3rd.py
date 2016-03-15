@@ -1,4 +1,5 @@
 # encoding=utf-8
+import json
 import logging
 from urllib import urlencode
 
@@ -37,6 +38,7 @@ class Web3rdAuthMixin(object):
     COMPONENT_VERIFY_TICKET_KEY = u"component_verify_ticket"
     COMPONENT_ACCESS_TOKEN_KEY = u"component_access_token"
     PRE_AUTH_CODE_KEY = u"pre_auth_code"
+    AUTH_ACCESS_TOKE_KEY = u"auth_%s_authorizer_access_token"
 
     def get_pre_auth_code(self):
         keeper = Keeper(self.store,
@@ -83,7 +85,7 @@ class Web3rdAuthMixin(object):
 
     def api_query_auth(self, auth_code):
         params = (
-            (u"component_access_token",self.get_component_access_token()),
+            (u"component_access_token", self.get_component_access_token()),
         )
         url = generate_url(u"https://api.weixin.qq.com/cgi-bin/component/api_query_auth", params=params)
         data = {
@@ -92,6 +94,30 @@ class Web3rdAuthMixin(object):
         }
         return http.post(url, json=data).json()
 
+    def api_authorizer_token(self, auth_appid):
+        params = (
+            (u"component_access_token", self.get_component_access_token()),
+        )
+        url = generate_url(u"https:// api.weixin.qq.com /cgi-bin/component/api_authorizer_token", params=params)
+        data = {
+            u"component_appid": self.app_id,
+            u"authorizer_appid": auth_appid,
+            u"authorizer_refresh_token": self._refresh_token(auth_appid)
+        }
+        ret = http.post(url, json=data).json()
+        return ret['authorizer_access_token']
+
+    def get_authorizer_token(self, auth_appid):
+        keeper = Keeper(self.store,
+                        gain_func=self.api_query_auth,
+                        gain_args={'auth_appid': auth_appid})
+        key = Web3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % auth_appid
+        return keeper.get(key)
+
+    def _refresh_token(self, auth_appid):
+        keeper = Keeper(self.store)
+        key = Web3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % auth_appid
+        return keeper.get(key)
 
     @property
     def verify_ticket(self):
@@ -245,5 +271,14 @@ class We3rdResponse(object):
         client = client3rd()
         ret = client.api_query_auth(auth_code)
 
-        # return render(request, 'chat/auth_handle.html', {'auth_code': auth_code, 'expires_in': expires_in})
+        key = u"auth_%s_authorizer_access_token" % ret[u'authorizer_appid']
+
+        # 缓存 access token
+        keeper = Keeper(client.store)
+        keeper.setex(key, expires_in, ret[u'authorizer_access_token'])
+
+        # 缓存 refresh token
+        refresh_key = u"refresh_%s_authorizer_refresh_token" % ret[u'authorizer_appid']
+        keeper.set(refresh_key, ret[u'authorizer_refresh_token'])
+
         return HttpResponse(u"ret: %r" % ret)

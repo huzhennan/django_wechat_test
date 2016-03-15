@@ -12,15 +12,19 @@ logger = logging.getLogger(__name__)
 class Keeper(object):
     EXPIRES_IN = u'expires_in'
 
-    def __init__(self, store, gain_func=None, shorten=0):
+    def __init__(self, store, gain_func=None, gain_args=None, shorten=0):
         """
         :param store: redis存储
         :param gain_func: 从网上获取taken的方法
         :param shorten: 缩短`expires_in`大小
         """
+        if gain_args is None:
+            gain_args = {}
+
         self.__store = store
         self.__gain_func = gain_func
         self.__shorten = shorten
+        self.__gain_args = gain_args
 
     def get(self, key):
         var = self.store.get(key)
@@ -30,7 +34,7 @@ class Keeper(object):
             return var
         else:
             if callable(self.gain_func):
-                var = self.gain_func()
+                var = self.gain_func(**self.__gain_args)
                 logger.debug("get %r = %r from %r", key, var, self.gain_func)
                 expires_in = var.get(Keeper.EXPIRES_IN, None)
                 if expires_in:
@@ -81,6 +85,11 @@ if __name__ == '__main__':
             return {"key": "this is"}
 
 
+    class B(object):
+        def gain_func(self, **kwargs):
+            return {"key": "this is %r" % kwargs}
+
+
     obj = A()
     store = redis.StrictRedis(host='localhost', port=6379)
     keeper = Keeper(store, obj.gain_func)
@@ -93,3 +102,7 @@ if __name__ == '__main__':
     ret2 = keeper.get("access_token2")
     print "%r %r" % (type(ret2), ret2)
 
+    b = B()
+    keeper_b = Keeper(store, gain_func=b.gain_func, gain_args={'arg': "hzn"})
+    ret_b = keeper_b.get("access_token3")
+    print "%r %r" % (type(ret_b), ret_b)
