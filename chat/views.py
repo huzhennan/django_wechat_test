@@ -98,6 +98,14 @@ def pre_auth_code(request):
 def component_login_page(request):
     client = client3rd()
 
-    login_page_uri = client.generate_component_login_page(u"http://www.zaihuiba.com/chat/event_handler/")
+    login_page_uri = client.generate_component_login_page(reverse('chat:handle_auth'))
     logger.debug("ret: %r", login_page_uri)
     return render(request, 'chat/component_login_page.html', {u'login_page_uri': login_page_uri})
+
+
+def handle_auth(request):
+    auth_code = request.GET.get(u'auth_code')
+    expires_in = request.GET.get(u'expires_in')
+
+    return render(request, 'chat/handle_auth.html', {'auth_code': auth_code,
+                                                     'expires_in': expires_in})
