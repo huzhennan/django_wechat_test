@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from chat import views
 
 urlpatterns = [
+    url(r'^/', views.component_login_page, name='home'),
     url(r'^chat/', include('chat.urls')),
     url(r'^admin/', admin.site.urls),
 ]

@@ -90,7 +90,7 @@ def pre_auth_code(request):
     elif request.method == 'POST':
         client = client3rd()
         ret = client.get_pre_auth_code()
-        logging.debug("ret: %r", ret)
+        logger.debug("ret: %r", ret)
         return render(request, 'chat/pre_auth_code.html', {'pre_auth_code': ret})
 
 
@@ -99,4 +99,5 @@ def component_login_page(request):
     client = client3rd()
 
     login_page_uri = client.generate_component_login_page(u"http://www.zaihuiba.com/chat/event_handler/")
+    logger.debug("ret: %r", login_page_uri)
     return render(request, 'chat/component_login_page.html', {u'login_page_uri': login_page_uri})
