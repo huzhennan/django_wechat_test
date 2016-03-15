@@ -73,8 +73,8 @@ class Web3rdAuthMixin(object):
     @property
     def verify_ticket(self):
         # return u'ticket@@@Vj2tT4I8R0vlyHTGNqDGSo7Dxvr6vYtHKF52yxcGuAFh0pOPh8A7OVf36uUpgDGrLY0WyZMDmolcihAeOgsrvw'
-        keeper = Keeper(self.store, Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
-        return keeper.get()
+        keeper = Keeper(self.store)
+        return keeper.get(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
 
     @property
     def store(self):
