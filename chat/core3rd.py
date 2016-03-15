@@ -81,6 +81,18 @@ class Web3rdAuthMixin(object):
         )
         return generate_url(u'https://mp.weixin.qq.com/cgi-bin/componentloginpage', params=params)
 
+    def api_query_auth(self, auth_code):
+        params = (
+            (u"component_access_token",self.get_component_access_token()),
+        )
+        url = generate_url(u"https://api.weixin.qq.com/cgi-bin/component/api_query_auth", params=params)
+        data = {
+            u"component_appid": self.app_id,
+            u"authorization_code": auth_code
+        }
+        return http.post(url, json=data).json()
+
+
     @property
     def verify_ticket(self):
         keeper = Keeper(self.store)
@@ -198,7 +210,7 @@ class We3rdClient(RewriteMixin, WechatBasic, Web3rdAuthMixin):
 class We3rdResponse(object):
     @staticmethod
     @csrf_exempt
-    def receive_verify_ticket(request):
+    def event_handle(request):
         msg_signature = request.GET.get(u'msg_signature')
         timestamp = request.GET.get(u'timestamp')
         nonce = request.GET.get(u'nonce')
@@ -230,4 +242,8 @@ class We3rdResponse(object):
 
     @staticmethod
     def auth_handle(request, auth_code, expires_in):
-        return render(request, 'chat/auth_handle.html', {'auth_code': auth_code, 'expires_in': expires_in})
+        client = client3rd()
+        ret = client.api_query_auth(auth_code)
+
+        # return render(request, 'chat/auth_handle.html', {'auth_code': auth_code, 'expires_in': expires_in})
+        return HttpResponse(u"ret: %r" % ret)
