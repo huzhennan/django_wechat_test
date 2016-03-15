@@ -71,9 +71,6 @@ def verify_ticket(request):
         return render(request, 'chat/verify_ticket.html', {'ticket': ticket})
 
 
-
-
-
 def component_token(request):
     if request.method == 'GET':
         return render(request, 'chat/component_token.html')
@@ -95,3 +92,11 @@ def pre_auth_code(request):
         ret = client.get_pre_auth_code()
         logging.debug("ret: %r", ret)
         return render(request, 'chat/pre_auth_code.html', {'pre_auth_code': ret})
+
+
+@require_GET
+def component_login_page(request):
+    client = client3rd()
+
+    login_page_uri = client.generate_component_login_page(u"http://www.zaihuiba.com/chat/event_handler/")
+    return render(request, 'chat/component_login_page.html', {u'login_page_uri': login_page_uri})

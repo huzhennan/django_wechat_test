@@ -72,6 +72,14 @@ class Web3rdAuthMixin(object):
         logging.info("data: %r", data)
         return http.post(url, json=data).json()
 
+    def generate_component_login_page(self, redirect_uri):
+        params = (
+            (u'component_appid', self.app_id),
+            (u'pre_auth_code', self.get_pre_auth_code()),
+            (u'redirect_uri', redirect_uri)
+        )
+        return generate_url(u'https://mp.weixin.qq.com/cgi-bin/componentloginpage', params=params)
+
     @property
     def verify_ticket(self):
         keeper = Keeper(self.store)
