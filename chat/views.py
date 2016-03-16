@@ -112,12 +112,12 @@ def auth_token(request):
         appid = request.POST.get('appid')
         use_cache = request.POST.get('use_cache')
 
-        client = client3rd()
+        client = client3rd(client_app_id=appid)
 
         if use_cache == u'yes':
-            ret = client.get_authorizer_token(appid)
+            ret = client.get_authorizer_token()
         else:
-            ret = client.api_authorizer_token(appid)
+            ret = client.api_authorizer_token()
 
         return HttpResponse("ret:%r" % ret)
 

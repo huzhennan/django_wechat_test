@@ -116,11 +116,11 @@ class We3rdAuthMixin(object):
         ret = http.post(url, json=data).json()
         return ret['authorizer_access_token']
 
-    def get_authorizer_token(self, auth_appid):
+    def get_authorizer_token(self):
         keeper = Keeper(self.store,
                         gain_func=self.api_authorizer_token,
-                        gain_args={'auth_appid': auth_appid})
-        key = We3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % auth_appid
+                        gain_args={'auth_appid': self.client_app_id})
+        key = We3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % self.client_app_id
         return keeper.get(key)
 
     def pre_auth_code(self):
