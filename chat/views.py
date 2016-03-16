@@ -9,6 +9,7 @@ from django.shortcuts import render
 from wechat_sdk.exceptions import OfficialAPIError
 from django.views.decorators.http import require_GET, require_POST
 
+from chat import core
 from chat.core3rd import client3rd
 from .handles import generate_test_menu, get_open_id
 
@@ -21,15 +22,16 @@ def index(request):
 
 def generate_menu(request):
     logger.debug("generate_menu 1111")
+    client = core.client()
     try:
         redirect_url = request.POST.get('redirect_url')
         if redirect_url:
-            generate_test_menu(redirect_url)
+            generate_test_menu(client, redirect_url)
         else:
-            generate_test_menu()
+            generate_test_menu(client)
         messages.info(request, u'增加菜单成功')
-    except OfficialAPIError, e:
-        print e
+    except OfficialAPIError:
+        logger.exception("what wrong???")
         messages.error(request, u'Something wrong')
 
     return HttpResponseRedirect(reverse('chat:index'))

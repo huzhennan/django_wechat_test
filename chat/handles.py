@@ -1,10 +1,10 @@
 # encoding=utf-8
 from __future__ import absolute_import
 
-from .core import client
+from chat.utils import generate_auth_url
 
 
-def generate_test_menu(redirect_url='http://www.baidu.com'):
+def generate_test_menu(client, redirect_url='http://www.baidu.com'):
     menu = {
         'button': [
             {
@@ -15,17 +15,17 @@ def generate_test_menu(redirect_url='http://www.baidu.com'):
             {
                 'type': 'view',
                 'name': 'SNSAPI_BASE',
-                'url': client().generate_auth_url(redirect_url)
+                'url': generate_auth_url(client.app_id, redirect_url)
             },
             {
                 'type': 'view',
                 'name': 'SNSAPI_USERINFO',
-                'url': client().generate_auth_url(redirect_url, scope='snsapi_userinfo')
+                'url': generate_auth_url(client.app_id, redirect_url, scope='snsapi_userinfo')
             },
         ]
     }
-    client().create_menu(menu)
+    client.create_menu(menu)
 
 
-def get_open_id(code):
-    return client().get_open_id(code)
+def get_open_id(client, code):
+    return client.get_open_id(code)
