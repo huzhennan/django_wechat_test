@@ -15,7 +15,9 @@ def generate_test_menu(client, app_id, redirect_url='http://www.baidu.com', comp
             {
                 'type': 'view',
                 'name': 'SNSAPI_BASE',
-                'url': generate_auth_url(app_id, redirect_url, component_appid)
+                'url': generate_auth_url(app_id, redirect_url,
+                                         scope='snsapi_base',
+                                         component_appid=component_appid)
             },
             {
                 'type': 'view',
