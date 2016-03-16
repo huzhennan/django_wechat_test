@@ -15,6 +15,7 @@ from wechat_sdk.lib.parser import XMLStore
 from wechat_sdk.messages import MESSAGE_TYPES, UnknownMessage
 
 from chat.keeper import Keeper
+from chat.utils import generate_url
 
 logger = logging.getLogger(__name__)
 
@@ -30,15 +31,14 @@ EXPIRES_AT = (datetime(2999, 1, 1) - datetime(1970, 1, 1)).total_seconds()
 store = redis.StrictRedis(host='localhost', port=6379)
 
 
-def client3rd():
-    c = We3rdClient(APP_ID, APP_SECRET, TOKEN, SYMMETRIC_KEY,
-                    client_app_id= CLIENT_APP_ID,
-                    store=store)
+def client3rd(client_app_id=None):
+    c = We3rdClient(component_app_id=APP_ID,
+                    component_app_secret=APP_SECRET,
+                    app_token=TOKEN,
+                    encoding_aes_key=SYMMETRIC_KEY,
+                    store=store,
+                    client_app_id=client_app_id)
     return c
-
-
-def generate_url(base_url, params):
-    return base_url + "?" + urlencode(params)
 
 
 class We3rdAuthMixin(object):
@@ -47,69 +47,71 @@ class We3rdAuthMixin(object):
     PRE_AUTH_CODE_KEY = u"pre_auth_code"
     AUTH_ACCESS_TOKE_KEY = u"auth_%s_authorizer_access_token"
 
-    def get_pre_auth_code(self):
-        keeper = Keeper(self.store,
-                        gain_func=self._gain_pre_auth_code)
-        ret = keeper.get(We3rdAuthMixin.PRE_AUTH_CODE_KEY)
-        return ret.get(u'pre_auth_code')
-
-    def _gain_pre_auth_code(self):
-        token = self.get_component_access_token()
-        params = {
-            u'component_access_token': token
-        }
-        url = generate_url(u"https://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode", params)
-
-        json_data = {
-            u"component_appid": self.app_id
-        }
-        return http.post(url, json=json_data).json()
-
     def get_component_access_token(self):
+        """
+        2、获取第三方平台component_access_token
+        :return:
+        """
         keeper = Keeper(self.store,
-                        gain_func=self._gain_component_access_token,
+                        gain_func=self.component_access_token,
                         shorten=60 * 10)
         ret = keeper.get(We3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY)
         return ret.get(u'component_access_token')
 
-    def _gain_component_access_token(self):
-        url = u"https://api.weixin.qq.com/cgi-bin/component/api_component_token"
-        data = {
-            u"component_appid": self.app_id,
-            u"component_appsecret": self.app_secret,
-            u"component_verify_ticket": self.verify_ticket
-        }
-        logging.info("data: %r", data)
-        return http.post(url, json=data).json()
+    def get_pre_auth_code(self):
+        """
+        3、获取预授权码pre_auth_code
+        :return:
+        """
+        keeper = Keeper(self.store,
+                        gain_func=self.pre_auth_code)
+        ret = keeper.get(We3rdAuthMixin.PRE_AUTH_CODE_KEY)
+        return ret.get(u'pre_auth_code')
 
     def generate_component_login_page(self, redirect_uri):
+        """
+        对应 4、使用授权码换取公众号的接口调用凭据和授权信息
+        生成weixin授权地址
+        :param redirect_uri:
+        :return:
+        """
         params = (
-            (u'component_appid', self.app_id),
+            (u'component_appid', self.component_app_id),
             (u'pre_auth_code', self.get_pre_auth_code()),
             (u'redirect_uri', redirect_uri)
         )
         return generate_url(u'https://mp.weixin.qq.com/cgi-bin/componentloginpage', params=params)
 
     def api_query_auth(self, auth_code):
+        """
+        4、使用授权码换取公众号的接口调用凭据和授权信息
+        该API用于使用授权码换取授权公众号的授权信息，并换取authorizer_access_token和authorizer_refresh_token
+        :param auth_code:
+        :return:
+        """
         params = (
             (u"component_access_token", self.get_component_access_token()),
         )
         url = generate_url(u"https://api.weixin.qq.com/cgi-bin/component/api_query_auth", params=params)
         data = {
-            u"component_appid": self.app_id,
+            u"component_appid": self.component_app_id,
             u"authorization_code": auth_code
         }
         return http.post(url, json=data).json()
 
-    def api_authorizer_token(self, auth_appid):
+    def api_authorizer_token(self):
+        """
+        5、获取（刷新）授权公众号的接口调用凭据（令牌）
+        :return:
+        """
         params = (
             (u"component_access_token", self.get_component_access_token()),
         )
         url = generate_url(u"https://api.weixin.qq.com/cgi-bin/component/api_authorizer_token", params=params)
         data = {
-            u"component_appid": self.app_id,
-            u"authorizer_appid": auth_appid,
-            u"authorizer_refresh_token": self._refresh_token(auth_appid)
+            u"component_appid": self.component_app_id,
+            u"authorizer_appid": self.client_app_id,
+            u"authorizer_refresh_token": self._refresh_token
         }
         ret = http.post(url, json=data).json()
         return ret['authorizer_access_token']
@@ -121,9 +123,31 @@ class We3rdAuthMixin(object):
         key = We3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % auth_appid
         return keeper.get(key)
 
-    def _refresh_token(self, auth_appid):
+    def pre_auth_code(self):
+        token = self.get_component_access_token()
+        params = {
+            u'component_access_token': token
+        }
+        url = generate_url(u"https://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode", params)
+
+        json_data = {
+            u"component_appid": self.component_app_id
+        }
+        return http.post(url, json=json_data).json()
+
+    def component_access_token(self):
+        url = u"https://api.weixin.qq.com/cgi-bin/component/api_component_token"
+        data = {
+            u"component_appid": self.component_app_id,
+            u"component_appsecret": self.component_app_secret,
+            u"component_verify_ticket": self.verify_ticket
+        }
+        logging.info("data: %r", data)
+        return http.post(url, json=data).json()
+
+    def _refresh_token(self):
         keeper = Keeper(self.store)
-        key = We3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % auth_appid
+        key = We3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % self.client_app_id
         return keeper.get(key)
 
     @property
@@ -141,11 +165,15 @@ class We3rdAuthMixin(object):
         raise NotImplementedError()
 
     @property
-    def app_id(self):
+    def component_app_id(self):
         raise NotImplementedError()
 
     @property
-    def app_secret(self):
+    def component_app_secret(self):
+        raise NotImplementedError()
+
+    @property
+    def client_app_id(self):
         raise NotImplementedError()
 
 
@@ -213,19 +241,49 @@ class RewriteMixin(object):
             raise NeedParseError()
 
 
-class We3rdClient(RewriteMixin, WechatBasic, We3rdAuthMixin):
-    def __init__(self, app_id, app_secret, app_token, encoding_aes_key, store, client_app_id, encrypt_mode='safe'):
+class Web3rdAuthMixin(object):
+    def get_web_token(self, code):
+        url = u"https://api.weixin.qq.com/sns/oauth2/component/access_token"
+        params = (
+            ('appid', self.client_app_id),
+            ('code', code),
+            ('grant_type', 'authorization_code'),
+            ('component_appid', self.component_app_id),
+            ('component_access_token', self.component_app_secret)
+        )
+        ret = http.get(url, params=params)
+        return ret.json()
+
+    def get_open_id(self, code):
+        return self.get_web_token(code)[u'openid']
+
+    @property
+    def component_app_id(self):
+        raise NotImplementedError()
+
+    @property
+    def component_app_secret(self):
+        raise NotImplementedError()
+
+    @property
+    def client_app_id(self):
+        raise NotImplementedError()
+
+
+class We3rdClient(RewriteMixin, WechatBasic, We3rdAuthMixin, Web3rdAuthMixin):
+    def __init__(self,component_app_id, component_app_secret,
+                 app_token, encoding_aes_key, store, encrypt_mode='safe', client_app_id=None):
         conf = WechatConf(
-            appid=app_id,
-            appsecret=app_secret,
+            appid=component_app_id,
+            appsecret=component_app_secret,
             token=app_token,
             encrypt_mode=encrypt_mode,
             encoding_aes_key=encoding_aes_key,
             access_token_getfunc=self.token_get_func
         )
         WechatBasic.__init__(self, conf=conf)
-        self.__app_id = app_id
-        self.__app_secret = app_secret
+        self.__component_app_id = component_app_id
+        self.__component_app_secret = component_app_secret
         self.__store = store
         self.__client_app_id = client_app_id
 
@@ -238,17 +296,16 @@ class We3rdClient(RewriteMixin, WechatBasic, We3rdAuthMixin):
         return self.__store
 
     @property
-    def app_id(self):
-        return self.__app_id
+    def component_app_id(self):
+        return self.__component_app_id
 
     @property
-    def app_secret(self):
-        return self.__app_secret
+    def component_app_secret(self):
+        return self.__component_app_secret
 
     @property
     def client_app_id(self):
         return self.__client_app_id
-
 
 
 class We3rdResponse(object):
@@ -271,6 +328,14 @@ class We3rdResponse(object):
 
     @staticmethod
     def ticket_handler(request, msg_signature, timestamp, nonce):
+        """
+        响应 1、推送component_verify_ticket
+        :param request:
+        :param msg_signature:
+        :param timestamp:
+        :param nonce:
+        :return:
+        """
         client = client3rd()
         client.parse_data(data=request.body, msg_signature=msg_signature, timestamp=timestamp, nonce=nonce)
         msg = client.get_message()

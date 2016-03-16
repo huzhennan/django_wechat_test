@@ -6,7 +6,7 @@ def generate_url(base_url, params):
     return base_url + "?" + urlencode(params)
 
 
-def generate_auth_url(app_id, redirect_uri, scope='snsapi_base', state='test'):
+def generate_auth_url(app_id, redirect_uri, scope='snsapi_base', state='test', component_appid=None):
     """
     生成网页制授权页面(对应第一步:用户同意授权，获取code)
     :param redirect_uri: 授权后重定向的回调链接地址，请使用urlencode对链接进行处理
@@ -22,4 +22,7 @@ def generate_auth_url(app_id, redirect_uri, scope='snsapi_base', state='test'):
         ('scope', scope),
         ('state', state)
     ]
+
+    if component_appid is not None:
+        params.append(['component_appid', component_appid])
     return generate_url('https://open.weixin.qq.com/connect/oauth2/authorize', params)
