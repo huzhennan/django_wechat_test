@@ -113,13 +113,11 @@ class We3rdAuthMixin(object):
             u"authorizer_appid": self.client_app_id,
             u"authorizer_refresh_token": self._refresh_token
         }
-        ret = http.post(url, json=data).json()
-        return ret['authorizer_access_token']
+        return http.post(url, json=data).json()
 
     def get_authorizer_token(self):
         keeper = Keeper(self.store,
-                        gain_func=self.api_authorizer_token,
-                        gain_args={'auth_appid': self.client_app_id})
+                        gain_func=self.api_authorizer_token)
         key = We3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % self.client_app_id
         return keeper.get(key)
 
@@ -271,7 +269,7 @@ class Web3rdAuthMixin(object):
 
 
 class We3rdClient(RewriteMixin, WechatBasic, We3rdAuthMixin, Web3rdAuthMixin):
-    def __init__(self,component_app_id, component_app_secret,
+    def __init__(self, component_app_id, component_app_secret,
                  app_token, encoding_aes_key, store, encrypt_mode='safe', client_app_id=None):
         conf = WechatConf(
             appid=component_app_id,
