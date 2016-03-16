@@ -41,7 +41,7 @@ def generate_url(base_url, params):
     return base_url + "?" + urlencode(params)
 
 
-class Web3rdAuthMixin(object):
+class We3rdAuthMixin(object):
     COMPONENT_VERIFY_TICKET_KEY = u"component_verify_ticket"
     COMPONENT_ACCESS_TOKEN_KEY = u"component_access_token"
     PRE_AUTH_CODE_KEY = u"pre_auth_code"
@@ -50,7 +50,7 @@ class Web3rdAuthMixin(object):
     def get_pre_auth_code(self):
         keeper = Keeper(self.store,
                         gain_func=self._gain_pre_auth_code)
-        ret = keeper.get(Web3rdAuthMixin.PRE_AUTH_CODE_KEY)
+        ret = keeper.get(We3rdAuthMixin.PRE_AUTH_CODE_KEY)
         return ret.get(u'pre_auth_code')
 
     def _gain_pre_auth_code(self):
@@ -69,7 +69,7 @@ class Web3rdAuthMixin(object):
         keeper = Keeper(self.store,
                         gain_func=self._gain_component_access_token,
                         shorten=60 * 10)
-        ret = keeper.get(Web3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY)
+        ret = keeper.get(We3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY)
         return ret.get(u'component_access_token')
 
     def _gain_component_access_token(self):
@@ -118,23 +118,23 @@ class Web3rdAuthMixin(object):
         keeper = Keeper(self.store,
                         gain_func=self.api_authorizer_token,
                         gain_args={'auth_appid': auth_appid})
-        key = Web3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % auth_appid
+        key = We3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % auth_appid
         return keeper.get(key)
 
     def _refresh_token(self, auth_appid):
         keeper = Keeper(self.store)
-        key = Web3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % auth_appid
+        key = We3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % auth_appid
         return keeper.get(key)
 
     @property
     def verify_ticket(self):
         keeper = Keeper(self.store)
-        return keeper.get(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
+        return keeper.get(We3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
 
     @verify_ticket.setter
     def verify_ticket(self, ticket):
         keeper = Keeper(self.store)
-        keeper.setex(Web3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY, 60 * 10, ticket)
+        keeper.setex(We3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY, 60 * 10, ticket)
 
     @property
     def store(self):
@@ -213,7 +213,7 @@ class RewriteMixin(object):
             raise NeedParseError()
 
 
-class We3rdClient(RewriteMixin, WechatBasic, Web3rdAuthMixin):
+class We3rdClient(RewriteMixin, WechatBasic, We3rdAuthMixin):
     def __init__(self, app_id, app_secret, app_token, encoding_aes_key, store, client_app_id, encrypt_mode='safe'):
         conf = WechatConf(
             appid=app_id,
