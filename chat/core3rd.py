@@ -111,7 +111,7 @@ class We3rdAuthMixin(object):
         data = {
             u"component_appid": self.component_app_id,
             u"authorizer_appid": self.client_app_id,
-            u"authorizer_refresh_token": self._refresh_token
+            u"authorizer_refresh_token": self._refresh_token()
         }
         return http.post(url, json=data).json()
 
