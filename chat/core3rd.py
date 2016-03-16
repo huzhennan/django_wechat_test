@@ -272,18 +272,17 @@ class We3rdResponse(object):
         ret = client.api_query_auth(auth_code)
         auth_info = ret[u'authorization_info']
 
+        keeper = Keeper(client.store)
+
         key = u"auth_%s_authorizer_access_token" % auth_info[u'authorizer_appid']
         value = auth_info[u'authorizer_access_token']
 
         # 缓存 access token
-        keeper = Keeper(client.store)
         keeper.setex(key, expires_in, value)
 
         # 缓存 refresh token
         refresh_key = u"refresh_%s_authorizer_refresh_token" % auth_info[u'authorizer_appid']
         refresh_value = auth_info[u'authorizer_refresh_token']
-        import pdb
-        pdb.set_trace()
 
         keeper.set(refresh_key, refresh_value)
 
