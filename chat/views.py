@@ -2,6 +2,7 @@
 
 import logging
 
+import time
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
@@ -11,6 +12,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from chat import core
 from chat.core3rd import client3rd
+from chat.core3rd import AUTH_ACCESS_TOKE_KEY
 from .handles import generate_test_menu, get_open_id
 
 logger = logging.getLogger(__name__)
@@ -115,9 +117,10 @@ def auth_token(request):
         client = client3rd(client_app_id=appid)
 
         if use_cache == u'yes':
-            ret = client.get_authorizer_token()
-        else:
-            ret = client.api_authorizer_token()
+            key = AUTH_ACCESS_TOKE_KEY % client.client_app_id
+            client.store.delete(key)
+
+        ret = client.get_authorizer_token()
 
         return HttpResponse("ret:%r" % ret)
 
