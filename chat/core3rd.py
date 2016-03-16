@@ -111,7 +111,7 @@ class Web3rdAuthMixin(object):
 
     def get_authorizer_token(self, auth_appid):
         keeper = Keeper(self.store,
-                        gain_func=self.api_query_auth,
+                        gain_func=self.api_authorizer_token,
                         gain_args={'auth_appid': auth_appid})
         key = Web3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % auth_appid
         return keeper.get(key)
