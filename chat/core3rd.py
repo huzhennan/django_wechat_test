@@ -116,8 +116,6 @@ class We3rdAuthMixin(object):
             u"authorizer_appid": self.client_app_id,
             u"authorizer_refresh_token": self._refresh_token()
         }
-        import pdb
-        pdb.set_trace()
         return http.post(url, json=data).json()
 
     def get_authorizer_token(self):
@@ -361,10 +359,8 @@ class We3rdResponse(object):
         keeper = Keeper(client.store)
 
         key = AUTH_ACCESS_TOKE_KEY % auth_info[u'authorizer_appid']
-        value = auth_info[u'authorizer_access_token']
-
         # 缓存 access token
-        keeper.setex(key, expires_in, value)
+        keeper.setex(key, expires_in, auth_info)
 
         # 缓存 refresh token
         refresh_key = REFRESH_ACCESS_TOKE_KEY % auth_info[u'authorizer_appid']
