@@ -130,10 +130,13 @@ def web_3rd_operation(request):
         return render(request, 'chat/web_3rd_operation.html')
     elif request.method == 'POST':
         redirect_url = 'http://www.baidu.com'
-        client = client3rd()
+        appid = request.POST.get('appid')
+        client = client3rd(client_app_id=appid)
 
         try:
-            generate_test_menu(client, client.client_app_id, redirect_url=redirect_url, component_appid=client.component_app_id)
+            generate_test_menu(client, client.client_app_id,
+                               redirect_url=redirect_url,
+                               component_appid=client.component_app_id)
             messages.info(request, u'增加菜单成功')
         except OfficialAPIError:
             logger.exception("what wrong???")
