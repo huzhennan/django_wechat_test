@@ -23,7 +23,7 @@ APP_SECRET = u'7678827bbe43445e4fb6631cd96e02dc'
 TOKEN = u'ZaiHuiNiuBi20151102'
 SYMMETRIC_KEY = u'yBUilBquwak6qAzuL1U04JrFSjwDjukjDoFjPRuLCU2'
 
-CLIENT_APP_ID = u'wx003b0a1d1a2990ad'
+CLIENT_APP_ID = u'wxd1ac16e44122c49a'
 
 EXPIRES_AT = (datetime(2999, 1, 1) - datetime(1970, 1, 1)).total_seconds()
 

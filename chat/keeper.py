@@ -58,7 +58,7 @@ class Keeper(object):
                     self.store.set(key, var_json)
                 return var, "request"
             else:
-                raise RuntimeError("I need a way to get value(self.gain_func==null)")
+                raise RuntimeError("I need a way to get %r (self.gain_func==null)" % key)
 
     def setex(self, key, time, value):
         """
