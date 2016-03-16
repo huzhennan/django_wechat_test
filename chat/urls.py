@@ -22,5 +22,6 @@ url(r'^$', views.index, name='index'),
     url(r'^pre_auth_code$', views.pre_auth_code, name='pre_auth_code'),
     url(r'^component_login_page$', views.component_login_page, name='component_login_page'),
     url(r'^auth_token$', views.auth_token, name='auth_token'),
+    url(r'^web_3rd_operation', views.web_3rd_operation, name='web_3rd_operation'),
 ]
 

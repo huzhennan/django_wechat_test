@@ -14,6 +14,7 @@ from .handles import generate_test_menu, get_open_id
 
 logger = logging.getLogger(__name__)
 
+
 def index(request):
     return render(request, 'chat/index.html', {})
 
@@ -117,3 +118,23 @@ def auth_token(request):
             ret = client.api_authorizer_token(appid)
 
         return HttpResponse("ret:%r" % ret)
+
+
+def web_3rd_operation(request):
+    if request.method == 'GET':
+        return render(request, 'chat/web_3rd_operation.html')
+    elif request.method == 'POST':
+        redirect_url = 'http://www.baidu.com'
+        client = client3rd()
+        menu = {
+            'button': [
+                {
+                    'type': 'view',
+                    'name': 'BASE(test)',
+                    'url': redirect_url
+                }
+            ]
+        }
+
+        client.create_menu(menu)
+        return render(request, 'chat/web_3rd_operation.html')

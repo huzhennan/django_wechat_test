@@ -1,14 +1,13 @@
 # encoding=utf-8
-import json
 import logging
 from urllib import urlencode
 
 import redis
 import requests as http
+from datetime import datetime
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from wechat_sdk import WechatConf, WechatBasic
 from wechat_sdk.exceptions import ParseError, NeedParseError
@@ -24,11 +23,17 @@ APP_SECRET = u'7678827bbe43445e4fb6631cd96e02dc'
 TOKEN = u'ZaiHuiNiuBi20151102'
 SYMMETRIC_KEY = u'yBUilBquwak6qAzuL1U04JrFSjwDjukjDoFjPRuLCU2'
 
+CLIENT_APP_ID = u'wx003b0a1d1a2990ad'
+
+EXPIRES_AT = (datetime(2999, 1, 1) - datetime(1970, 1, 1)).total_seconds()
+
 store = redis.StrictRedis(host='localhost', port=6379)
 
 
 def client3rd():
-    c = We3rdClient(APP_ID, APP_SECRET, TOKEN, SYMMETRIC_KEY, store=store)
+    c = We3rdClient(APP_ID, APP_SECRET, TOKEN, SYMMETRIC_KEY,
+                    client_app_id= CLIENT_APP_ID,
+                    store=store)
     return c
 
 
@@ -209,18 +214,24 @@ class RewriteMixin(object):
 
 
 class We3rdClient(RewriteMixin, WechatBasic, Web3rdAuthMixin):
-    def __init__(self, app_id, app_secret, app_token, encoding_aes_key, store, encrypt_mode='safe'):
+    def __init__(self, app_id, app_secret, app_token, encoding_aes_key, store, client_app_id, encrypt_mode='safe'):
         conf = WechatConf(
             appid=app_id,
             appsecret=app_secret,
             token=app_token,
             encrypt_mode=encrypt_mode,
-            encoding_aes_key=encoding_aes_key
+            encoding_aes_key=encoding_aes_key,
+            access_token_getfunc=self.token_get_func
         )
         WechatBasic.__init__(self, conf=conf)
         self.__app_id = app_id
         self.__app_secret = app_secret
         self.__store = store
+        self.__client_app_id = client_app_id
+
+    def token_get_func(self):
+        token = self.get_authorizer_token(self.client_app_id)
+        return token, EXPIRES_AT
 
     @property
     def store(self):
@@ -233,6 +244,11 @@ class We3rdClient(RewriteMixin, WechatBasic, Web3rdAuthMixin):
     @property
     def app_secret(self):
         return self.__app_secret
+
+    @property
+    def client_app_id(self):
+        return self.__client_app_id
+
 
 
 class We3rdResponse(object):
