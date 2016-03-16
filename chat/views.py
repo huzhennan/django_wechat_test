@@ -116,7 +116,7 @@ def auth_token(request):
 
         client = client3rd(client_app_id=appid)
 
-        if use_cache == u'yes':
+        if use_cache != u'yes':
             key = AUTH_ACCESS_TOKE_KEY % client.client_app_id
             client.store.delete(key)
 
