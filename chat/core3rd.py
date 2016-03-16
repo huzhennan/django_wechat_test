@@ -289,8 +289,8 @@ class We3rdClient(RewriteMixin, WechatBasic, We3rdAuthMixin, Web3rdAuthMixin):
         self.__client_app_id = client_app_id
 
     def token_get_func(self):
-        token = self.get_authorizer_token()
-        return token, EXPIRES_AT
+        ret = self.get_authorizer_token()
+        return ret[u'authorizer_access_token'], EXPIRES_AT
 
     @property
     def store(self):
