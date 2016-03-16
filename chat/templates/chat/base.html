@@ -5,7 +5,19 @@
     <title>第三方微信平台测试页面</title>
 </head>
 <body>
-<h1><a href="{% url 'chat:test_web_3rd' %}">第三方微信平台测试页面</a> </h1>
+<div>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+                    {{ message }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+<h1><a href="{% url 'chat:test_web_3rd' %}">第三方微信平台测试页面</a></h1>
 {% block content %}
 {% endblock %}
 </body>

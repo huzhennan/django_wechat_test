@@ -5,7 +5,9 @@ from urllib import urlencode
 
 import redis
 import requests as http
-from django.http import HttpResponse
+from django.contrib import messages
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from wechat_sdk import WechatConf, WechatBasic
@@ -286,4 +288,5 @@ class We3rdResponse(object):
 
         keeper.set(refresh_key, refresh_value)
 
-        return HttpResponse(u"ret: %r" % ret)
+        messages.add_message(request, messages.INFO, "获取授权成功")
+        return HttpResponseRedirect(reverse('home'))
