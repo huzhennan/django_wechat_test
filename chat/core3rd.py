@@ -105,7 +105,7 @@ class Web3rdAuthMixin(object):
         params = (
             (u"component_access_token", self.get_component_access_token()),
         )
-        url = generate_url(u"https:// api.weixin.qq.com /cgi-bin/component/api_authorizer_token", params=params)
+        url = generate_url(u"https://api.weixin.qq.com/cgi-bin/component/api_authorizer_token", params=params)
         data = {
             u"component_appid": self.app_id,
             u"authorizer_appid": auth_appid,
