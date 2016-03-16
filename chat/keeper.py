@@ -27,11 +27,22 @@ class Keeper(object):
         self.__gain_args = gain_args
 
     def get(self, key):
+        """
+        :param key:
+        :return:
+        """
+        val, _ = self.get_with_source(key)
+        return val
+
+    def get_with_source(self, key):
+        """
+        :return: (value, source): 返回值和来源地
+        """
         var = self.store.get(key)
         if var:
             var = json.loads(var)
             logger.debug("get %r = %r from store", key, var)
-            return var
+            return var, "cache"
         else:
             if callable(self.gain_func):
                 var = self.gain_func(**self.__gain_args)
@@ -45,7 +56,7 @@ class Keeper(object):
                     self.store.setex(key, expires_in, var_json)
                 else:
                     self.store.set(key, var_json)
-                return var
+                return var, "request"
             else:
                 raise RuntimeError("I need a way to get value(self.gain_func==null)")
 
@@ -61,7 +72,7 @@ class Keeper(object):
         Set the value at key name to value
         """
         val = json.dumps(value)
-        return self.set(key, val)
+        return self.store.set(key, val)
 
     @property
     def store(self):
