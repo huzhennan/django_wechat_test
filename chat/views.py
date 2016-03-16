@@ -28,9 +28,9 @@ def generate_menu(request):
     try:
         redirect_url = request.POST.get('redirect_url')
         if redirect_url:
-            generate_test_menu(client, redirect_url)
+            generate_test_menu(client, client.app_id, redirect_url)
         else:
-            generate_test_menu(client)
+            generate_test_menu(client, client.app_id)
         messages.info(request, u'增加菜单成功')
     except OfficialAPIError:
         logger.exception("what wrong???")
@@ -133,7 +133,7 @@ def web_3rd_operation(request):
         client = client3rd()
 
         try:
-            generate_test_menu(client, redirect_url)
+            generate_test_menu(client, client.client_app_id, redirect_url=redirect_url, component_appid=client.component_app_id)
             messages.info(request, u'增加菜单成功')
         except OfficialAPIError:
             logger.exception("what wrong???")

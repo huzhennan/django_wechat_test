@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from chat.utils import generate_auth_url
 
 
-def generate_test_menu(client, redirect_url='http://www.baidu.com'):
+def generate_test_menu(client, app_id, redirect_url='http://www.baidu.com', component_appid=None):
     menu = {
         'button': [
             {
@@ -15,12 +15,14 @@ def generate_test_menu(client, redirect_url='http://www.baidu.com'):
             {
                 'type': 'view',
                 'name': 'SNSAPI_BASE',
-                'url': generate_auth_url(client.app_id, redirect_url)
+                'url': generate_auth_url(app_id, redirect_url, component_appid)
             },
             {
                 'type': 'view',
                 'name': 'SNSAPI_USERINFO',
-                'url': generate_auth_url(client.app_id, redirect_url, scope='snsapi_userinfo')
+                'url': generate_auth_url(app_id, redirect_url,
+                                         scope='snsapi_userinfo',
+                                         component_appid=component_appid)
             },
         ]
     }
