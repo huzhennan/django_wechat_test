@@ -41,11 +41,14 @@ def client3rd(client_app_id=None):
     return c
 
 
+AUTH_ACCESS_TOKE_KEY = u"auth_%s_access_token"
+REFRESH_ACCESS_TOKE_KEY = u"refresh_%s_access_token"
+
+
 class We3rdAuthMixin(object):
     COMPONENT_VERIFY_TICKET_KEY = u"component_verify_ticket"
     COMPONENT_ACCESS_TOKEN_KEY = u"component_access_token"
     PRE_AUTH_CODE_KEY = u"pre_auth_code"
-    AUTH_ACCESS_TOKE_KEY = u"auth_%s_authorizer_access_token"
 
     def get_component_access_token(self):
         """
@@ -113,12 +116,14 @@ class We3rdAuthMixin(object):
             u"authorizer_appid": self.client_app_id,
             u"authorizer_refresh_token": self._refresh_token()
         }
+        import pdb
+        pdb.set_trace()
         return http.post(url, json=data).json()
 
     def get_authorizer_token(self):
         keeper = Keeper(self.store,
                         gain_func=self.api_authorizer_token)
-        key = We3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % self.client_app_id
+        key = AUTH_ACCESS_TOKE_KEY % self.client_app_id
         return keeper.get(key)
 
     def pre_auth_code(self):
@@ -145,7 +150,7 @@ class We3rdAuthMixin(object):
 
     def _refresh_token(self):
         keeper = Keeper(self.store)
-        key = We3rdAuthMixin.AUTH_ACCESS_TOKE_KEY % self.client_app_id
+        key = REFRESH_ACCESS_TOKE_KEY % self.client_app_id
         return keeper.get(key)
 
     @property
@@ -286,7 +291,7 @@ class We3rdClient(RewriteMixin, WechatBasic, We3rdAuthMixin, Web3rdAuthMixin):
         self.__client_app_id = client_app_id
 
     def token_get_func(self):
-        token = self.get_authorizer_token(self.client_app_id)
+        token = self.get_authorizer_token()
         return token, EXPIRES_AT
 
     @property
@@ -355,14 +360,14 @@ class We3rdResponse(object):
 
         keeper = Keeper(client.store)
 
-        key = u"auth_%s_authorizer_access_token" % auth_info[u'authorizer_appid']
+        key = AUTH_ACCESS_TOKE_KEY % auth_info[u'authorizer_appid']
         value = auth_info[u'authorizer_access_token']
 
         # 缓存 access token
         keeper.setex(key, expires_in, value)
 
         # 缓存 refresh token
-        refresh_key = u"refresh_%s_authorizer_refresh_token" % auth_info[u'authorizer_appid']
+        refresh_key = REFRESH_ACCESS_TOKE_KEY % auth_info[u'authorizer_appid']
         refresh_value = auth_info[u'authorizer_refresh_token']
 
         keeper.set(refresh_key, refresh_value)
