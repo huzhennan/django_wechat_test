@@ -5,7 +5,7 @@ import json
 import unittest
 
 import redis
-from  redis.exceptions import  ConnectionError
+from  redis.exceptions import ConnectionError
 
 from chat.keeper import Keeper
 
@@ -13,6 +13,11 @@ from chat.keeper import Keeper
 class AMock(object):
     def gain_func(self):
         return {"key": "this is"}
+
+
+class BMock(object):
+    def gain_func(self, **kwargs):
+        return {"key": "this is %r" % kwargs}
 
 
 class TestKeeper(unittest.TestCase):
@@ -39,6 +44,12 @@ class TestKeeper(unittest.TestCase):
         ret, source = keeper.get_with_source(TestKeeper.KEY1)
         self.assertEqual(source, "cache")
 
+    def test_get(self):
+        a = AMock()
+        keeper = Keeper(self.store, a.gain_func)
+        ret = keeper.get(TestKeeper.KEY1)
+        self.assertDictEqual(ret, {"key": "this is"})
+
     def test_setex(self):
         keeper = Keeper(self.store)
         val = u"hello"
@@ -56,3 +67,10 @@ class TestKeeper(unittest.TestCase):
         ret = self.store.get(TestKeeper.KEY1)
 
         self.assertEqual(json.loads(ret), val)
+
+    def test_get_with_args(self):
+        b = BMock()
+        keeper = Keeper(self.store, gain_func=b.gain_func, gain_args={'arg': '1'})
+        ret = keeper.get(TestKeeper.KEY1)
+        self.assertDictEqual(ret, {"key": "this is {'arg': '1'}"})
+
