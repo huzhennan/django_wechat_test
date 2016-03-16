@@ -3,7 +3,9 @@
 <div>
 <form action="" method="post">
     {% csrf_token %}
+    <label>AppId:</label>
     <input type="text" name="appid">
+    <input type="checkbox" name="use_cache", value="yes"> 从缓存获取<br>
     <input type="submit" value="Submit">
 </form>
 </div>

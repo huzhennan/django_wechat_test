@@ -14,7 +14,6 @@ from .handles import generate_test_menu, get_open_id
 
 logger = logging.getLogger(__name__)
 
-
 def index(request):
     return render(request, 'chat/index.html', {})
 
@@ -108,7 +107,13 @@ def auth_token(request):
         return render(request, 'chat/auth_token.html')
     elif request.method == 'POST':
         appid = request.POST.get('appid')
+        use_cache = request.POST.get('use_cache')
 
         client = client3rd()
-        ret = client.get_authorizer_token(appid)
+
+        if use_cache == u'yes':
+            ret = client.get_authorizer_token(appid)
+        else:
+            ret = client.api_authorizer_token(appid)
+
         return HttpResponse("ret:%r" % ret)
