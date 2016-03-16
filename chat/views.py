@@ -131,8 +131,18 @@ def web_3rd_operation(request):
                 {
                     'type': 'view',
                     'name': 'BASE(test)',
-                    'url': redirect_url
-                }
+                    'url': 'http://www.baidu.com'
+                },
+                {
+                    'type': 'view',
+                    'name': 'BASE(test)',
+                    'url': 'http://www.baidu.com'
+                },
+                {
+                    'type': 'view',
+                    'name': 'BASE(test)',
+                    'url': 'http://www.baidu.com'
+                },
             ]
         }
 
