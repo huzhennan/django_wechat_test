@@ -128,25 +128,12 @@ def web_3rd_operation(request):
     elif request.method == 'POST':
         redirect_url = 'http://www.baidu.com'
         client = client3rd()
-        menu = {
-            'button': [
-                {
-                    'type': 'view',
-                    'name': 'BASE(test)',
-                    'url': 'http://www.baidu.com'
-                },
-                {
-                    'type': 'view',
-                    'name': 'BASE(test)',
-                    'url': 'http://www.baidu.com'
-                },
-                {
-                    'type': 'view',
-                    'name': 'BASE(test)',
-                    'url': 'http://www.baidu.com'
-                },
-            ]
-        }
 
-        client.create_menu(menu)
+        try:
+            generate_test_menu(client, redirect_url)
+            messages.info(request, u'增加菜单成功')
+        except OfficialAPIError:
+            logger.exception("what wrong???")
+            messages.error(request, u'Something wrong')
+
         return render(request, 'chat/web_3rd_operation.html')
