@@ -1,6 +1,4 @@
 # encoding=utf-8
-import redis
-from datetime import datetime
 
 from wechat_lib.conf import *
 from .we import WeClient

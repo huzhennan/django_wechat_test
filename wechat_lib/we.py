@@ -8,6 +8,7 @@ import requests as http
 from wechat_sdk import WechatConf, WechatBasic
 
 from wechat_lib.store_key import ACCESS_TOKEN_KEY, JSAPI_TICKET_KEY
+from wechat_lib.conf import EXPIRES_AT, store
 
 logger = logging.getLogger(__name__)
 
