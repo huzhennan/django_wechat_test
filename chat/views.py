@@ -129,7 +129,7 @@ def web_3rd_operation(request):
     if request.method == 'GET':
         return render(request, 'chat/web_3rd_operation.html')
     elif request.method == 'POST':
-        redirect_url = 'http://www.baidu.com'
+        redirect_url = request.POST.get('redirect_url')
         appid = request.POST.get('appid')
         client = client3rd(client_app_id=appid)
 
