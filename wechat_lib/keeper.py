@@ -5,6 +5,9 @@ import json
 import logging
 
 import redis
+from wechat_sdk.exceptions import OfficialAPIError
+
+from wechat_lib.exceptions import NotFoundException
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +48,12 @@ class Keeper(object):
             return var, "cache"
         else:
             if callable(self.gain_func):
-                var = self.gain_func(**self.__gain_args)
+                try:
+                    var = self.gain_func(**self.__gain_args)
+                except OfficialAPIError as e:
+                    logger.exception("winxin api error")
+                    raise NotFoundException(u"没有找到%r相关的内容" % key)
+
                 logger.debug("get %r = %r from %r", key, var, self.gain_func)
                 expires_in = var.get(Keeper.EXPIRES_IN, None)
                 if expires_in:
