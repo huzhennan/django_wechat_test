@@ -56,6 +56,13 @@ def open_id(request):
 
 @require_GET
 def test_web_3rd(request):
+    code = request.GET.get('code')
+    appid = request.GET.get('appid')
+    if code is not None and appid is not None:
+        client = client3rd(client_app_id=appid)
+        ret = client.get_web_token(code)
+        logger.debug('test_web_3rd ret: %r', ret)
+
     return render(request, 'chat/test_web_3rd.html')
 
 
