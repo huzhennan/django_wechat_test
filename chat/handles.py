@@ -14,12 +14,12 @@ def generate_test_menu(client, app_id, redirect_url='http://www.baidu.com', comp
             },
             {
                 'type': 'view',
-                'name': 'base',
+                'name': 'BASE',
                 'url': generate_auth_url(app_id, redirect_url, component_appid=component_appid)
             },
             {
-                'type': 'USERINFO',
-                'name': '搜索',
+                'type': 'view',
+                'name': 'USERINFO',
                 'url': generate_auth_url(app_id, redirect_url, scope='snsapi_userinfo', component_appid=component_appid)
             },
         ]})
