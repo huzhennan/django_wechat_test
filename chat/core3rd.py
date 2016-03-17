@@ -250,7 +250,7 @@ class Web3rdAuthMixin(object):
             ('code', code),
             ('grant_type', 'authorization_code'),
             ('component_appid', self.component_app_id),
-            ('component_access_token', self.component_app_secret)
+            ('component_access_token', self.get_component_access_token())
         )
         ret = http.get(url, params=params)
         return ret.json()
@@ -268,6 +268,9 @@ class Web3rdAuthMixin(object):
 
     @property
     def client_app_id(self):
+        raise NotImplementedError()
+
+    def get_component_access_token(self):
         raise NotImplementedError()
 
 
