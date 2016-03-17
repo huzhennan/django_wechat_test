@@ -15,28 +15,31 @@ from chat.core3rd import client3rd
 from chat.core3rd import AUTH_ACCESS_TOKE_KEY
 from .handles import generate_test_menu, get_open_id
 
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-def index(request):
-    return render(request, 'chat/index.html', {})
-
 
 def generate_menu(request):
-    logger.debug("generate_menu 1111")
-    client = core.client()
-    try:
-        redirect_url = request.POST.get('redirect_url')
-        if redirect_url:
-            generate_test_menu(client, client.app_id, redirect_url)
-        else:
-            generate_test_menu(client, client.app_id)
-        messages.info(request, u'增加菜单成功')
-    except OfficialAPIError:
-        logger.exception("what wrong???")
-        messages.error(request, u'Something wrong')
+    if request.method == 'GET':
+        return render(request, 'chat/generate_menu.html', {})
+    elif request.method == 'POST':
+        logger.debug("generate_menu 1111")
+        client = core.client()
+        try:
+            redirect_url = request.POST.get('redirect_url')
+            if redirect_url:
+                generate_test_menu(client, client.app_id, redirect_url)
+            else:
+                generate_test_menu(client, client.app_id)
+            messages.info(request, u'增加菜单成功')
+        except OfficialAPIError:
+            logger.exception("what wrong???")
+            messages.error(request, u'Something wrong')
 
-    return HttpResponseRedirect(reverse('chat:index'))
+        logger.debug("ret: %r", client.get_menu())
+
+        return HttpResponseRedirect(reverse('chat:index'))
 
 
 def open_id(request):
@@ -133,6 +136,8 @@ def web_3rd_operation(request):
         appid = request.POST.get('appid')
         client = client3rd(client_app_id=appid)
 
+        logger.debug("before menu: %r", client.get_menu())
+
         try:
             generate_test_menu(client, client.client_app_id,
                                redirect_url=redirect_url,
@@ -141,6 +146,8 @@ def web_3rd_operation(request):
         except OfficialAPIError:
             logger.exception("what wrong???")
             messages.error(request, u'Something wrong')
+
+        logger.debug("before menu: %r", client.get_menu())
 
         return render(request, 'chat/web_3rd_operation.html')
 
