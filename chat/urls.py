@@ -9,7 +9,7 @@ from .core import WeResponse
 
 app_name = 'chat'
 urlpatterns = [
-url(r'^$', views.index, name='index'),
+    url(r'^$', views.home, name='index'),
     url(r'^generate-menu$', views.generate_menu, name='generate_menu'),
     url(r'^open-id$', views.open_id, name='open_id'),
     url(r'^check-signature$', WeResponse.check_signature, name='check_signature'),
@@ -24,4 +24,3 @@ url(r'^$', views.index, name='index'),
     url(r'^auth_token$', views.auth_token, name='auth_token'),
     url(r'^web_3rd_operation', views.web_3rd_operation, name='web_3rd_operation'),
 ]
-

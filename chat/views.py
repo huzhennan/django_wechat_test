@@ -143,3 +143,7 @@ def web_3rd_operation(request):
             messages.error(request, u'Something wrong')
 
         return render(request, 'chat/web_3rd_operation.html')
+
+
+def home(request):
+    return render(request, 'chat/home.html')
