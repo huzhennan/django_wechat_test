@@ -4,7 +4,6 @@ from __future__ import absolute_import
 import json
 import logging
 
-import redis
 from wechat_sdk.exceptions import OfficialAPIError
 
 from wechat_lib.exceptions import NotFoundException
@@ -52,7 +51,7 @@ class Keeper(object):
                     var = self.gain_func(**self.__gain_args)
                 except OfficialAPIError as e:
                     logger.exception("winxin api error")
-                    raise NotFoundException(u"没有找到%r相关的内容" % key)
+                    raise NotFoundException(u"%r not found" % key)
 
                 logger.debug("get %r = %r from %r", key, var, self.gain_func)
                 expires_in = var.get(Keeper.EXPIRES_IN, None)
@@ -93,35 +92,3 @@ class Keeper(object):
     @property
     def shorten(self):
         return self.__shorten
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
-
-    class A(object):
-        def gain_func(self):
-            return {"key": "this is"}
-
-
-    class B(object):
-        def gain_func(self, **kwargs):
-            return {"key": "this is %r" % kwargs}
-
-
-    obj = A()
-    store = redis.StrictRedis(host='localhost', port=6379)
-    keeper = Keeper(store, obj.gain_func)
-
-    ret = keeper.get("access_token")
-
-    print "%r %r" % (type(ret), ret)
-
-    keeper.setex("access_token2", 1000, "hello")
-    ret2 = keeper.get("access_token2")
-    print "%r %r" % (type(ret2), ret2)
-
-    b = B()
-    keeper_b = Keeper(store, gain_func=b.gain_func, gain_args={'arg': "hzn"})
-    ret_b = keeper_b.get("access_token3")
-    print "%r %r" % (type(ret_b), ret_b)
