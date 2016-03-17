@@ -8,35 +8,20 @@ def generate_test_menu(client, app_id, redirect_url='http://www.baidu.com', comp
     client.create_menu({
         'button': [
             {
-                'type': 'click',
-                'name': 'hzn',
-                'key': 'V1001_TODAY_MUSIC'
+                'type': 'view',
+                'name': 'empty',
+                'url': redirect_url
             },
             {
-                'type': 'click',
-                'name': '歌手简介',
-                'key': 'V1001_TODAY_SINGER'
+                'type': 'view',
+                'name': 'base',
+                'url': generate_auth_url(app_id, redirect_url, component_appid=component_appid)
             },
             {
-                'name': '菜单',
-                'sub_button': [
-                    {
-                        'type': 'view',
-                        'name': '搜索',
-                        'url': 'http://www.soso.com/'
-                    },
-                    {
-                        'type': 'view',
-                        'name': '视频',
-                        'url': 'http://v.qq.com/'
-                    },
-                    {
-                        'type': 'click',
-                        'name': '赞一下我们',
-                        'key': 'V1001_GOOD'
-                    }
-                ]
-            }
+                'type': 'USERINFO',
+                'name': '搜索',
+                'url': generate_auth_url(app_id, redirect_url, scope='snsapi_userinfo', component_appid=component_appid)
+            },
         ]})
 
 
