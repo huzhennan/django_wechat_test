@@ -60,8 +60,10 @@ def test_web_3rd(request):
     appid = request.GET.get('appid')
     if code is not None and appid is not None:
         client = client3rd(client_app_id=appid)
-        ret = client.get_web_token(code)
-        logger.debug('test_web_3rd ret: %r', ret)
+        # ret = client.get_web_token(code)
+        open_id = client.get_open_id(code)
+        logger.debug('test_web_3rd ret: %r', open_id)
+        return render(request, 'chat/test_web_3rd.html', {'open_id': open_id})
 
     return render(request, 'chat/test_web_3rd.html')
 

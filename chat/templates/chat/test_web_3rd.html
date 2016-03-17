@@ -1,5 +1,11 @@
 {% extends 'chat/base.html' %}
 {% block content %}
+{% if open_id %}
+<div>
+OpenId: {{ open_id }}
+</div>
+{% endif %}
+
 <ul>
     <li><a href="{% url 'chat:verify_ticket' %}">获取得到`verify_ticket`</a></li>
     <li><a href="{% url 'chat:component_token' %}">获取得到`component_access_token`</a> </li>
