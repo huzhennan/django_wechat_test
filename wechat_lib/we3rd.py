@@ -103,7 +103,7 @@ class We3rdAuthMixin(object):
         json_data = {
             u"component_appid": self.component_app_id
         }
-        return http.post(url, json=json_data).json()
+        return http.post(url, json=json_data)
 
     def component_access_token(self):
         url = u"https://api.weixin.qq.com/cgi-bin/component/api_component_token"
