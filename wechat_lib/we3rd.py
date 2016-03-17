@@ -69,7 +69,7 @@ class We3rdAuthMixin(object):
             u"component_appid": self.component_app_id,
             u"authorization_code": auth_code
         }
-        return http.post(url, json=data).json()
+        return http.post(url, json=data)
 
     def api_authorizer_token(self):
         """
@@ -85,7 +85,7 @@ class We3rdAuthMixin(object):
             u"authorizer_appid": self.client_app_id,
             u"authorizer_refresh_token": self._refresh_token()
         }
-        return http.post(url, json=data).json()
+        return http.post(url, json=data)
 
     def get_authorizer_token(self):
         keeper = Keeper(self.store,
@@ -113,7 +113,7 @@ class We3rdAuthMixin(object):
             u"component_verify_ticket": self.verify_ticket
         }
         logging.info("data: %r", data)
-        return http.post(url, json=data).json()
+        return http.post(url, json=data)
 
     def _refresh_token(self):
         keeper = Keeper(self.store)
@@ -222,7 +222,7 @@ class Web3rdAuthMixin(object):
             ('component_access_token', self.get_component_access_token())
         )
         ret = http.get(url, params=params)
-        return ret.json()
+        return ret
 
     def get_open_id(self, code):
         return self.get_web_token(code)[u'openid']

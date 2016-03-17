@@ -33,7 +33,7 @@ class WebAuthMixin(object):
         )
 
         r = http.get(url, params=params)
-        return r.json()
+        return r
 
     def get_open_id(self, code):
         """
