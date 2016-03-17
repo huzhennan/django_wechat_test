@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from chat.utils import generate_auth_url
 
 
-def generate_test_menu(client, app_id, redirect_url='http://www.baidu.com', component_appid=None):
+def generate_test_menu(client, app_id, redirect_url='http://www.zaihuiba.com', component_appid=None):
     client.create_menu({
         'button': [
             {
