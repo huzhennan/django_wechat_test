@@ -1,5 +1,7 @@
+from __future__ import absolute_import
 import unittest
-from chat.utils import generate_auth_url
+
+from wechat_lib.utils import generate_auth_url
 
 
 class TestUtils(unittest.TestCase):

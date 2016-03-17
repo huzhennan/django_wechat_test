@@ -10,14 +10,12 @@ from django.shortcuts import render
 from wechat_sdk.exceptions import OfficialAPIError
 from django.views.decorators.http import require_GET, require_POST
 
-from chat import core
-from chat.core3rd import client3rd
-from chat.core3rd import AUTH_ACCESS_TOKE_KEY
+from wechat_lib.store_key import AUTH_ACCESS_TOKE_KEY
 from .handles import generate_test_menu, get_open_id
+from wechat_lib import Client, Client3rd
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
 
 
 def generate_menu(request):
@@ -25,19 +23,19 @@ def generate_menu(request):
         return render(request, 'chat/generate_menu.html', {})
     elif request.method == 'POST':
         logger.debug("generate_menu 1111")
-        client = core.client()
+        cli = Client()
         try:
             redirect_url = request.POST.get('redirect_url')
             if redirect_url:
-                generate_test_menu(client, client.app_id, redirect_url)
+                generate_test_menu(cli, cli.app_id, redirect_url)
             else:
-                generate_test_menu(client, client.app_id)
+                generate_test_menu(cli, cli.app_id)
             messages.info(request, u'增加菜单成功')
         except OfficialAPIError:
             logger.exception("what wrong???")
             messages.error(request, u'Something wrong')
 
-        logger.debug("ret: %r", client.get_menu())
+        logger.debug("ret: %r", cli.get_menu())
 
         return HttpResponseRedirect(reverse('chat:index'))
 
@@ -59,7 +57,7 @@ def test_web_3rd(request):
     code = request.GET.get('code')
     appid = request.GET.get('appid')
     if code is not None and appid is not None:
-        client = client3rd(client_app_id=appid)
+        client = Client3rd(client_app_id=appid)
         # ret = client.get_web_token(code)
         open_id = client.get_open_id(code)
         logger.debug('test_web_3rd ret: %r', open_id)
@@ -70,7 +68,7 @@ def test_web_3rd(request):
 
 def verify_ticket(request):
     if request.method == 'GET':
-        client = client3rd()
+        client = Client3rd()
         try:
             ticket = client.verify_ticket
         except RuntimeError as e:
@@ -81,7 +79,7 @@ def verify_ticket(request):
     elif request.method == 'POST':
         ticket = request.POST.get('verify_ticket')
 
-        client = client3rd()
+        client = Client3rd()
         client.verify_ticket = ticket
 
         return render(request, 'chat/verify_ticket.html', {'ticket': ticket})
@@ -91,7 +89,7 @@ def component_token(request):
     if request.method == 'GET':
         return render(request, 'chat/component_token.html')
     elif request.method == 'POST':
-        client = client3rd()
+        client = Client3rd()
         try:
             ret = client.get_component_access_token()
         except RuntimeError, e:
@@ -104,7 +102,7 @@ def pre_auth_code(request):
     if request.method == 'GET':
         return render(request, 'chat/pre_auth_code.html')
     elif request.method == 'POST':
-        client = client3rd()
+        client = Client3rd()
         ret = client.get_pre_auth_code()
         logger.debug("ret: %r", ret)
         return render(request, 'chat/pre_auth_code.html', {'pre_auth_code': ret})
@@ -112,7 +110,7 @@ def pre_auth_code(request):
 
 @require_GET
 def component_login_page(request):
-    client = client3rd()
+    client = Client3rd()
 
     login_page_uri = client.generate_component_login_page(u"http://www.zaihuiba.com/chat/event_handler/")
     logger.debug("ret: %r", login_page_uri)
@@ -126,7 +124,7 @@ def auth_token(request):
         appid = request.POST.get('appid')
         use_cache = request.POST.get('use_cache')
 
-        client = client3rd(client_app_id=appid)
+        client = Client3rd(client_app_id=appid)
 
         if use_cache != u'yes':
             key = AUTH_ACCESS_TOKE_KEY % client.client_app_id
@@ -143,7 +141,7 @@ def web_3rd_operation(request):
     elif request.method == 'POST':
         redirect_url = request.POST.get('redirect_url')
         appid = request.POST.get('appid')
-        client = client3rd(client_app_id=appid)
+        client = Client3rd(client_app_id=appid)
 
         logger.debug("before menu: %r", client.get_menu())
 

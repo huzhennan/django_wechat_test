@@ -3,32 +3,20 @@ from __future__ import absolute_import
 
 import logging
 import time
-from datetime import datetime
-from urllib import urlencode
 
-import redis
 import requests as http
-from django.http import HttpResponse
 from wechat_sdk import WechatConf, WechatBasic
 
-TOKEN = u"ZaiHuiWanSui2015"
-APP_ID = u"wxd1ac16e44122c49a"
-APP_SECRET = u"d3ddce902a9d3c1f2071eb25f479df33"
+from wechat_lib.store_key import ACCESS_TOKEN_KEY, JSAPI_TICKET_KEY
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-store = redis.StrictRedis(host='localhost', port=6379)
-
-
-def client():
-    c = WeClient(APP_ID, APP_SECRET, TOKEN, store=store)
-    return c
 
 class WebAuthMixin(object):
     """
     http://mp.weixin.qq.com/wiki/4/9ac2e7b1f1d22e9e57260f6553822520.html
     """
+
     def get_web_token(self, code):
         """
         通过code换取网页授权access_token(对应第二步)
@@ -64,14 +52,6 @@ class WebAuthMixin(object):
 
 
 class WeClient(WechatBasic, WebAuthMixin):
-    ACCESS_TOKEN_KEY = u"access_token"
-    JSAPI_TICKET_KEY = u"jsonapi_ticket"
-
-    # access_token_getfunc 需要返回形如(token, expires_at)的数据
-    # 可我们并不需要这个过期时间,由store存储管理
-    # 给一个未来的时间
-    EXPIRES_AT = (datetime(2999, 1, 1) - datetime(1970, 1, 1)).total_seconds()
-
     def __init__(self, app_id, app_secret, app_token, store):
         conf = WechatConf(
             appid=app_id,
@@ -87,25 +67,25 @@ class WeClient(WechatBasic, WebAuthMixin):
         self.__store = store
 
     def get_access_token_func(self):
-        token = self.store.get(WeClient.ACCESS_TOKEN_KEY)
-        logger.debug(self.store.ttl(WeClient.ACCESS_TOKEN_KEY))
+        token = self.store.get(ACCESS_TOKEN_KEY)
+        logger.debug(self.store.ttl(ACCESS_TOKEN_KEY))
         if token:
             logger.debug("Get token from store")
-            return token, WeClient.EXPIRES_AT
+            return token, EXPIRES_AT
         else:
             logger.debug("Get token from request")
             json_ret = self.grant_token()
             token = json_ret[u'access_token']
             # 获取得到的有效期为`json_ret[u'expires_in']`,提前60s失效
             expires_in = int(json_ret[u'expires_in']) - 60
-            store.setex(WeClient.ACCESS_TOKEN_KEY, expires_in, token)
-            return token, WeClient.EXPIRES_AT
+            store.setex(ACCESS_TOKEN_KEY, expires_in, token)
+            return token, EXPIRES_AT
 
     def get_jsapi_ticket_func(self):
-        ticket = self.store.get(WeClient.JSAPI_TICKET_KEY)
+        ticket = self.store.get(JSAPI_TICKET_KEY)
         if ticket:
             logger.debug("Get ticket from store")
-            expires_at = time.time() + self.store.ttl(WeClient.JSAPI_TICKET_KEY)
+            expires_at = time.time() + self.store.ttl(JSAPI_TICKET_KEY)
             return ticket, expires_at
         else:
             logger.debug("Get ticket from request")
@@ -113,7 +93,7 @@ class WeClient(WechatBasic, WebAuthMixin):
             logger.debug(json_ret)
             ticket = json_ret[u'ticket']
             expires_in = int(json_ret[u'expires_in']) - 60
-            store.setex(WeClient.JSAPI_TICKET_KEY, expires_in, ticket)
+            store.setex(JSAPI_TICKET_KEY, expires_in, ticket)
             expires_at = time.time() + expires_in
             return ticket, expires_at
 
@@ -132,31 +112,3 @@ class WeClient(WechatBasic, WebAuthMixin):
     @property
     def app_token(self):
         return self.__app_token
-
-
-class WeResponse(object):
-    @staticmethod
-    def check_signature(request):
-        signature = request.GET.get('signature')
-        timestamp = request.GET.get('timestamp')
-        nonce = request.GET.get('nonce')
-        echostr = request.GET.get('echostr')
-
-        import pdb
-        pdb.set_trace()
-        # TODO: 测试这里检查不通过, do something.
-        if client().check_signature(signature, timestamp, nonce):
-            print 'success'
-        else:
-            print 'something is wrong'
-        return HttpResponse(echostr)
-
-    @staticmethod
-    def test_token():
-        client().get_access_token()
-
-
-if __name__ == '__main__':
-    # print client().get_access_token()
-    print "Result: %r" % client().get_jsapi_ticket()
-    # print client().get_menu()

@@ -4,7 +4,7 @@ import unittest
 
 import redis
 
-from chat.core3rd import We3rdClient
+from wechat_lib.we3rd import We3rdClient
 
 APP_ID = u'wx67c082d3d5c5c355'
 APP_SECRET = u'7678827bbe43445e4fb6631cd96e02dc'

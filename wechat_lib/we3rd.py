@@ -1,55 +1,23 @@
 # encoding=utf-8
 import logging
-from urllib import urlencode
-
-import redis
-import requests as http
 from datetime import datetime
-from django.contrib import messages
-from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
-from django.views.decorators.csrf import csrf_exempt
+
+import requests as http
 from wechat_sdk import WechatConf, WechatBasic
 from wechat_sdk.exceptions import ParseError, NeedParseError
 from wechat_sdk.lib.parser import XMLStore
 from wechat_sdk.messages import MESSAGE_TYPES, UnknownMessage
 
-from chat.keeper import Keeper
-from chat.utils import generate_url
+from wechat_lib import EXPIRES_AT
+from wechat_lib.keeper import Keeper
+from wechat_lib.store_key import COMPONENT_ACCESS_TOKEN_KEY, PRE_AUTH_CODE_KEY, AUTH_ACCESS_TOKE_KEY, \
+    REFRESH_ACCESS_TOKE_KEY, COMPONENT_VERIFY_TICKET_KEY
+from wechat_lib.utils import generate_url
 
 logger = logging.getLogger(__name__)
 
-APP_ID = u'wx67c082d3d5c5c355'
-APP_SECRET = u'7678827bbe43445e4fb6631cd96e02dc'
-TOKEN = u'ZaiHuiNiuBi20151102'
-SYMMETRIC_KEY = u'yBUilBquwak6qAzuL1U04JrFSjwDjukjDoFjPRuLCU2'
-
-CLIENT_APP_ID = u'wxd1ac16e44122c49a'
-
-EXPIRES_AT = (datetime(2999, 1, 1) - datetime(1970, 1, 1)).total_seconds()
-
-store = redis.StrictRedis(host='localhost', port=6379)
-
-
-def client3rd(client_app_id=None):
-    c = We3rdClient(component_app_id=APP_ID,
-                    component_app_secret=APP_SECRET,
-                    app_token=TOKEN,
-                    encoding_aes_key=SYMMETRIC_KEY,
-                    store=store,
-                    client_app_id=client_app_id)
-    return c
-
-
-AUTH_ACCESS_TOKE_KEY = u"auth_%s_access_token"
-REFRESH_ACCESS_TOKE_KEY = u"refresh_%s_access_token"
-
 
 class We3rdAuthMixin(object):
-    COMPONENT_VERIFY_TICKET_KEY = u"component_verify_ticket"
-    COMPONENT_ACCESS_TOKEN_KEY = u"component_access_token"
-    PRE_AUTH_CODE_KEY = u"pre_auth_code"
-
     def get_component_access_token(self):
         """
         2、获取第三方平台component_access_token
@@ -58,7 +26,7 @@ class We3rdAuthMixin(object):
         keeper = Keeper(self.store,
                         gain_func=self.component_access_token,
                         shorten=60 * 10)
-        ret = keeper.get(We3rdAuthMixin.COMPONENT_ACCESS_TOKEN_KEY)
+        ret = keeper.get(COMPONENT_ACCESS_TOKEN_KEY)
         return ret.get(u'component_access_token')
 
     def get_pre_auth_code(self):
@@ -68,7 +36,7 @@ class We3rdAuthMixin(object):
         """
         keeper = Keeper(self.store,
                         gain_func=self.pre_auth_code)
-        ret = keeper.get(We3rdAuthMixin.PRE_AUTH_CODE_KEY)
+        ret = keeper.get(PRE_AUTH_CODE_KEY)
         return ret.get(u'pre_auth_code')
 
     def generate_component_login_page(self, redirect_uri):
@@ -154,12 +122,12 @@ class We3rdAuthMixin(object):
     @property
     def verify_ticket(self):
         keeper = Keeper(self.store)
-        return keeper.get(We3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY)
+        return keeper.get(COMPONENT_VERIFY_TICKET_KEY)
 
     @verify_ticket.setter
     def verify_ticket(self, ticket):
         keeper = Keeper(self.store)
-        keeper.setex(We3rdAuthMixin.COMPONENT_VERIFY_TICKET_KEY, 60 * 10, ticket)
+        keeper.setex(COMPONENT_VERIFY_TICKET_KEY, 60 * 10, ticket)
 
     @property
     def store(self):
@@ -310,66 +278,3 @@ class We3rdClient(RewriteMixin, WechatBasic, We3rdAuthMixin, Web3rdAuthMixin):
     @property
     def client_app_id(self):
         return self.__client_app_id
-
-
-class We3rdResponse(object):
-    @staticmethod
-    @csrf_exempt
-    def event_handle(request):
-        msg_signature = request.GET.get(u'msg_signature')
-        timestamp = request.GET.get(u'timestamp')
-        nonce = request.GET.get(u'nonce')
-
-        auth_code = request.GET.get(u'auth_code')
-        expires_in = request.GET.get(u'expires_in')
-
-        if msg_signature is not None and timestamp is not None and nonce is not None:
-            return We3rdResponse.ticket_handler(request, msg_signature, timestamp, nonce)
-        elif auth_code is not None and expires_in is not None:
-            return We3rdResponse.auth_handle(request, auth_code, expires_in)
-        else:
-            raise NotImplementedError("something is wrong.")
-
-    @staticmethod
-    def ticket_handler(request, msg_signature, timestamp, nonce):
-        """
-        响应 1、推送component_verify_ticket
-        :param request:
-        :param msg_signature:
-        :param timestamp:
-        :param nonce:
-        :return:
-        """
-        client = client3rd()
-        client.parse_data(data=request.body, msg_signature=msg_signature, timestamp=timestamp, nonce=nonce)
-        msg = client.get_message()
-
-        verify_ticket = msg.ComponentVerifyTicket
-        expires_in = 10 * 60
-
-        keeper = Keeper(client.store)
-        keeper.setex(We3rdClient.COMPONENT_VERIFY_TICKET_KEY, expires_in, verify_ticket)
-
-        logger.info("I gains a  ticket: %r, expires_in: %r", verify_ticket, expires_in)
-        return HttpResponse(u"success")
-
-    @staticmethod
-    def auth_handle(request, auth_code, expires_in):
-        client = client3rd()
-        ret = client.api_query_auth(auth_code)
-        auth_info = ret[u'authorization_info']
-
-        keeper = Keeper(client.store)
-
-        key = AUTH_ACCESS_TOKE_KEY % auth_info[u'authorizer_appid']
-        # 缓存 access token
-        keeper.setex(key, expires_in, auth_info)
-
-        # 缓存 refresh token
-        refresh_key = REFRESH_ACCESS_TOKE_KEY % auth_info[u'authorizer_appid']
-        refresh_value = auth_info[u'authorizer_refresh_token']
-
-        keeper.set(refresh_key, refresh_value)
-
-        messages.add_message(request, messages.INFO, "获取授权成功")
-        return HttpResponseRedirect(reverse('home'))

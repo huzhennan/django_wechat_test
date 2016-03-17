@@ -7,7 +7,7 @@ import unittest
 import redis
 from  redis.exceptions import ConnectionError
 
-from chat.keeper import Keeper
+from wechat_lib.keeper import Keeper
 
 
 class AMock(object):
@@ -73,4 +73,3 @@ class TestKeeper(unittest.TestCase):
         keeper = Keeper(self.store, gain_func=b.gain_func, gain_args={'arg': '1'})
         ret = keeper.get(TestKeeper.KEY1)
         self.assertDictEqual(ret, {"key": "this is {'arg': '1'}"})
-

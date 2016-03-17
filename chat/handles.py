@@ -1,7 +1,7 @@
 # encoding=utf-8
 from __future__ import absolute_import
 
-from chat.utils import generate_auth_url
+from wechat_lib.utils import generate_auth_url
 
 
 def generate_test_menu(client, app_id, redirect_url='http://www.zaihuiba.com', component_appid=None):
