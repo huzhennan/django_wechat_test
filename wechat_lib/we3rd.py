@@ -1,18 +1,19 @@
 # encoding=utf-8
-import logging
-from datetime import datetime
+from __future__ import absolute_import
 
-import requests as http
+import logging
+
 from wechat_sdk import WechatConf, WechatBasic
 from wechat_sdk.exceptions import ParseError, NeedParseError
 from wechat_sdk.lib.parser import XMLStore
 from wechat_sdk.messages import MESSAGE_TYPES, UnknownMessage
 
-from wechat_lib import EXPIRES_AT
-from wechat_lib.keeper import Keeper
-from wechat_lib.store_key import COMPONENT_ACCESS_TOKEN_KEY, PRE_AUTH_CODE_KEY, AUTH_ACCESS_TOKE_KEY, \
+from . import http
+from .conf import EXPIRES_AT
+from .keeper import Keeper
+from .store_key import COMPONENT_ACCESS_TOKEN_KEY, PRE_AUTH_CODE_KEY, AUTH_ACCESS_TOKE_KEY, \
     REFRESH_ACCESS_TOKE_KEY, COMPONENT_VERIFY_TICKET_KEY
-from wechat_lib.utils import generate_url
+from .utils import generate_url
 
 logger = logging.getLogger(__name__)
 

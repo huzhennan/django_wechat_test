@@ -4,11 +4,11 @@ from __future__ import absolute_import
 import logging
 import time
 
-import requests as http
 from wechat_sdk import WechatConf, WechatBasic
 
-from wechat_lib.store_key import ACCESS_TOKEN_KEY, JSAPI_TICKET_KEY
-from wechat_lib.conf import EXPIRES_AT, store
+from .conf import EXPIRES_AT, store
+from .store_key import ACCESS_TOKEN_KEY, JSAPI_TICKET_KEY
+from . import http
 
 logger = logging.getLogger(__name__)
 

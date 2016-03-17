@@ -1,4 +1,6 @@
 # coding=utf-8
+from __future__ import absolute_import
+
 import logging
 
 from django.contrib import messages
@@ -6,9 +8,9 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 
-from wechat_lib import Client3rd
-from wechat_lib.keeper import Keeper
-from wechat_lib.we3rd import COMPONENT_VERIFY_TICKET_KEY, AUTH_ACCESS_TOKE_KEY, REFRESH_ACCESS_TOKE_KEY
+from . import Client3rd
+from .keeper import Keeper
+from .we3rd import COMPONENT_VERIFY_TICKET_KEY, AUTH_ACCESS_TOKE_KEY, REFRESH_ACCESS_TOKE_KEY
 
 logger = logging.getLogger(__name__)
 
