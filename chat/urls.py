@@ -6,6 +6,7 @@ from django.conf.urls import url
 from wechat_lib.we3rd_response import We3rdResponse
 from wechat_lib.we_response import WeResponse
 from . import views
+from . import wechat_views
 
 
 app_name = 'chat'
@@ -26,4 +27,6 @@ urlpatterns = [
 
     url(r'^check-signature$', WeResponse.check_signature, name='check_signature'),
     url(r'^event_handler/$', We3rdResponse.event_handle, name='receive_verify_ticket'),
+
+    url(r'^public-event-handle', wechat_views.public_event_handle, name='public_event_handle'),
 ]
