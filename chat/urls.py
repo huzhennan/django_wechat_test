@@ -28,5 +28,5 @@ urlpatterns = [
     url(r'^check-signature$', WeResponse.check_signature, name='check_signature'),
     url(r'^event_handler/$', We3rdResponse.event_handle, name='receive_verify_ticket'),
 
-    url(r'^public-event-handle', wechat_views.public_event_handle, name='public_event_handle'),
+    url(r'^public-event-handle/$', wechat_views.public_event_handle, name='public_event_handle'),
 ]
