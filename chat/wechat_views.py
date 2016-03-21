@@ -62,9 +62,8 @@ def _msg_handle(request):
 
 def _text_msg_handle(request, client, text):
     logger.debug("_text_msg_handle %r", text)
-    response_content = "hello, recevice: %r" % text
-    client.response_text(response_content)
-    return HttpResponse("")
+    response_content = client.response_text("hello, recevice: %r" % text)
+    return HttpResponse(response_content)
 
 
 def _event_msg_handle(request, client):
