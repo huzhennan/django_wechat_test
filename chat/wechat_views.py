@@ -7,6 +7,7 @@ import logging
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from wechat_sdk.exceptions import ParseError
+from wechat_sdk.messages import TextMessage, EventMessage
 
 from wechat_lib import Client
 
@@ -42,19 +43,23 @@ def _msg_handle(request):
     signature = request.GET.get('signature')
     timestamp = request.GET.get('timestamp')
     nonce = request.GET.get('nonce')
-    data = request.body
-
-    logger.debug("msg_handle data: %r", data)
 
     client = Client()
     try:
-        client.parse_data(data=data,
-                      msg_signature=signature,
-                      timestamp=timestamp,
-                      nonce=nonce)
+        client.parse_data(data=request.body,
+                          msg_signature=signature,
+                          timestamp=timestamp,
+                          nonce=nonce)
     except ParseError as e:
         logger.exception("Error")
 
-    logger.debug(client.message.raw)
+    if isinstance(client.message, TextMessage):
+        return _text_msg_handle(request, client.message.content)
+    elif isinstance(client.message, EventMessage):
+        pass
     return HttpResponse("")
 
+
+def _text_msg_handle(request, text):
+    logger.debug("_text_msg_handle %r", text)
+    return HttpResponse("")
