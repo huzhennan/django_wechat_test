@@ -26,9 +26,9 @@ class We3rdResponse(object):
         auth_code = request.GET.get(u'auth_code')
         expires_in = request.GET.get(u'expires_in')
 
-        if msg_signature is not None and timestamp is not None and nonce is not None:
+        if msg_signature and timestamp and nonce:
             return We3rdResponse.ticket_handler(request, msg_signature, timestamp, nonce)
-        elif auth_code is not None and expires_in is not None:
+        elif auth_code and expires_in:
             return We3rdResponse.auth_handle(request, auth_code, expires_in)
         else:
             raise NotImplementedError("something is wrong.")

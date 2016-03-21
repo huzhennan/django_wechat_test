@@ -23,6 +23,6 @@ def generate_auth_url(app_id, redirect_uri, scope='snsapi_base', state='test', c
         ('state', state)
     ]
 
-    if component_appid is not None:
+    if component_appid:
         params.append(['component_appid', component_appid])
     return generate_url('https://open.weixin.qq.com/connect/oauth2/authorize', params)

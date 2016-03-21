@@ -6,7 +6,7 @@ import logging
 
 from wechat_sdk.exceptions import OfficialAPIError
 
-from wechat_lib.exceptions import NotFoundException
+from .exceptions import NotFoundException
 
 logger = logging.getLogger(__name__)
 

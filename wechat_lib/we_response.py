@@ -1,7 +1,7 @@
 # coding=utf-8
 from django.http import HttpResponse
 
-from wechat_lib import Client
+from . import Client
 
 
 class WeResponse(object):

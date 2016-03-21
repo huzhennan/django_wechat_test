@@ -1,6 +1,6 @@
 # encoding=utf-8
 
-from wechat_lib.conf import *
+from .conf import *
 from .we import WeClient
 from .we3rd import We3rdClient
 
