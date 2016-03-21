@@ -42,6 +42,8 @@ def _msg_handle(request):
     nonce = request.GET.get('nonce')
     data = request.body
 
+    logger.debug("msg_handle data: %r", data)
+
     client = Client()
     try:
         client.parse_data(data=data,
@@ -49,7 +51,7 @@ def _msg_handle(request):
                       timestamp=timestamp,
                       nonce=nonce)
     except ParseError as e:
-        pass
+        logger.exception("Error")
 
     logger.debug(client.message.raw)
     return HttpResponse("")
