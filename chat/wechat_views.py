@@ -54,14 +54,16 @@ def _msg_handle(request):
         logger.exception("Error")
 
     if isinstance(client.message, TextMessage):
-        return _text_msg_handle(request, client.message.content)
+        return _text_msg_handle(request, client, client.message.content)
     elif isinstance(client.message, EventMessage):
         return _event_msg_handle(request, client)
     return HttpResponse("")
 
 
-def _text_msg_handle(request, text):
+def _text_msg_handle(request, client, text):
     logger.debug("_text_msg_handle %r", text)
+    response_content = "hello, recevice: %r" % text
+    client.response_text(response_content)
     return HttpResponse("")
 
 
