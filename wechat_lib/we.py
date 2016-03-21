@@ -53,11 +53,12 @@ class WebAuthMixin(object):
 
 
 class WeClient(WechatBasic, WebAuthMixin):
-    def __init__(self, app_id, app_secret, app_token, store):
+    def __init__(self, app_id, app_secret, app_token, store, encrypt_mode='normal'):
         conf = WechatConf(
             appid=app_id,
             appsecret=app_secret,
             token=app_token,
+            encrypt_mode=encrypt_mode,
             access_token_getfunc=self.get_access_token_func,
             jsapi_ticket_getfunc=self.get_jsapi_ticket_func,
         )
