@@ -56,10 +56,15 @@ def _msg_handle(request):
     if isinstance(client.message, TextMessage):
         return _text_msg_handle(request, client.message.content)
     elif isinstance(client.message, EventMessage):
-        pass
+        return _event_msg_handle(request, client)
     return HttpResponse("")
 
 
 def _text_msg_handle(request, text):
     logger.debug("_text_msg_handle %r", text)
+    return HttpResponse("")
+
+
+def _event_msg_handle(request, client):
+    logger.debug("_event_msg_handle: %r", client.message.type)
     return HttpResponse("")
