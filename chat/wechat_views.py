@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from wechat_sdk.exceptions import ParseError
 
 from wechat_lib import Client
@@ -12,6 +13,7 @@ from wechat_lib import Client
 logger = logging.getLogger(__name__)
 
 
+@csrf_exempt
 def public_event_handle(request):
     """
     公众平台事件处理
