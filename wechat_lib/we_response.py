@@ -1,7 +1,7 @@
 # coding=utf-8
 from django.http import HttpResponse
 
-from . import Client
+from . import wechat_client
 
 
 class WeResponse(object):
@@ -13,7 +13,7 @@ class WeResponse(object):
         echostr = request.GET.get('echostr')
 
         # TODO: 测试这里检查不通过, do something.
-        if Client().check_signature(signature, timestamp, nonce):
+        if wechat_client().check_signature(signature, timestamp, nonce):
             print 'success'
         else:
             print 'something is wrong'

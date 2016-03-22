@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 
-from . import Client3rd
+from . import wechat3rd_client
 from .keeper import Keeper
 from .we3rd import COMPONENT_VERIFY_TICKET_KEY, AUTH_ACCESS_TOKE_KEY, REFRESH_ACCESS_TOKE_KEY
 
@@ -43,7 +43,7 @@ class We3rdResponse(object):
         :param nonce:
         :return:
         """
-        client = Client3rd()
+        client = wechat3rd_client()
         client.parse_data(data=request.body, msg_signature=msg_signature, timestamp=timestamp, nonce=nonce)
         msg = client.get_message()
 
@@ -58,7 +58,7 @@ class We3rdResponse(object):
 
     @staticmethod
     def auth_handle(request, auth_code, expires_in):
-        client = Client3rd()
+        client = wechat3rd_client()
         ret = client.api_query_auth(auth_code)
         auth_info = ret[u'authorization_info']
 

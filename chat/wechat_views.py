@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from wechat_sdk.exceptions import ParseError
 from wechat_sdk.messages import TextMessage, EventMessage
 
-from wechat_lib import Client
+from wechat_lib import wechat_client
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ def _check_signature(request):
     nonce = request.GET.get('nonce')
     echostr = request.GET.get('echostr')
 
-    if Client().check_signature(signature, timestamp, nonce):
+    if wechat_client().check_signature(signature, timestamp, nonce):
         logger.debug('wechat check_signature success')
     else:
         logger.debug('wechat check_signature fail')
@@ -44,7 +44,7 @@ def _msg_handle(request):
     timestamp = request.GET.get('timestamp')
     nonce = request.GET.get('nonce')
 
-    client = Client()
+    client = wechat_client()
     try:
         client.parse_data(data=request.body,
                           msg_signature=signature,
